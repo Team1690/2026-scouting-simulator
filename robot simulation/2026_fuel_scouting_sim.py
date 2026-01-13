@@ -10,11 +10,11 @@ class RobotModel:
         self.fire_rate_function = fire_rate_function
         self.max_fire_rate = max_fire_rate
 
-    def get_points_for_magazine(self, magazine_precentage: float):
+    def get_points_for_magazine(self, magazine_percentage: float):
         hits = 0
         misses = 0
         
-        shots_count = round(self.magazine_size * magazine_precentage)
+        shots_count = round(self.magazine_size * magazine_percentage)
         for _ in range(shots_count):
             if random.random() < self.accuracy:
                 hits += 1
@@ -23,11 +23,16 @@ class RobotModel:
 
         return hits
 
-    def time_to_deplete(self,  dt: float, magazine_precentage: float):
+    def time_to_deplete(self,  dt: float, magazine_percentage: float):
         t = 0.0
-        current_fuel_in_magazine = round(self.magazine_size * magazine_precentage)
+        current_fuel_in_magazine = round(self.magazine_size * magazine_percentage)
+        
+        MAX_TIME = 1000.0
 
         while current_fuel_in_magazine > 0:
+            if t > MAX_TIME:
+                return float('inf')
+                
             current_fuel_in_magazine -= self.fire_rate_function(t) * dt
             t += dt
             
@@ -85,12 +90,12 @@ def main():
         max_fire_rate=2.0 
     )
 
-    magazine_precentage = random.random()
+    magazine_percentage = random.random()
     
     print(f"Robot name: {robot.name}")
-    print(f"Magazine size: {round(magazine_precentage * robot.magazine_size)}")
-    print(f"Points for magazine: {robot.get_points_for_magazine(magazine_precentage)}")
-    time_to_deplete = robot.time_to_deplete(0.05, magazine_precentage)
+    print(f"Current Fuel: {round(magazine_percentage * robot.magazine_size)}")
+    print(f"Points for magazine: {robot.get_points_for_magazine(magazine_percentage)}")
+    time_to_deplete = robot.time_to_deplete(0.05, magazine_percentage)
     print(f"Time to deplete: {time_to_deplete}")
 
     robot2 = RobotModel(
@@ -102,27 +107,27 @@ def main():
     )
     
     print(f"\nRobot name: {robot2.name}")
-    print(f"Magazine size: {round(magazine_precentage * robot2.magazine_size)}")
-    print(f"Points for magazine: {robot2.get_points_for_magazine(magazine_precentage)}")
-    print(f"Time to deplete: {robot2.time_to_deplete(0.05, magazine_precentage)}")
+    print(f"Current Fuel: {round(magazine_percentage * robot2.magazine_size)}")
+    print(f"Points for magazine: {robot2.get_points_for_magazine(magazine_percentage)}")
+    print(f"Time to deplete: {robot2.time_to_deplete(0.05, magazine_percentage)}")
 
     robot3 = RobotModel(
         name="Inconsistent shooting with jam - Askof's function",
         magazine_size=100,
-        accuracy=0.8,
+        accuracy=0.9,
         fire_rate_function=inconsistent_jam_fire,
-        max_fire_rate=8.0 # peaks at 8
+        max_fire_rate=10.0 # peaks at 8
     )
 
     print(f"\nRobot name: {robot3.name}")
-    print(f"Magazine size: {round(magazine_precentage * robot3.magazine_size)}")
-    print(f"Points for magazine: {robot3.get_points_for_magazine(magazine_precentage)}")
-    print(f"Time to deplete: {robot3.time_to_deplete(0.05, magazine_precentage)}")
+    print(f"Current Fuel: {round(magazine_percentage * robot3.magazine_size)}")
+    print(f"Points for magazine: {robot3.get_points_for_magazine(magazine_percentage)}")
+    print(f"Time to deplete: {robot3.time_to_deplete(0.05, magazine_percentage)}")
     
     print("\nScout Model Observation:")
     scout = ScoutModel()
-    observation = scout.recorded_observation_by_scouter(time_to_deplete, magazine_precentage)
-    print(f"Actual Percent: {magazine_precentage*100:.2f}%")
+    observation = scout.recorded_observation_by_scouter(time_to_deplete, magazine_percentage)
+    print(f"Actual Percent: {magazine_percentage*100:.2f}%")
     print(f"Observed: {observation}")
 
 
