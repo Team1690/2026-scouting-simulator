@@ -82,7 +82,7 @@ class ScoutModel:
 
 
 def main():
-    robots_to_simulate = ["Inconsistent shooting with jam - Askof's function", "Log", "bot1"]
+    robots_to_simulate = ["Inconsistent shooting with jam - Askof's function"]
 
     robot1 = RobotModel(
         name="bot1",
@@ -133,14 +133,18 @@ def main():
             print("\nStats:")
             
             real_percentage = magazine_percentage * 100
-            error = abs(real_percentage - obs_bucket)
-            print(f"Error rate: {error:.2f}% (difference between {real_percentage:.2f}% and {obs_bucket}%)")
+            error = 100 * abs(obs_bucket - real_percentage) / real_percentage
+            print(f"Shots error: {error:.2f}% (Real: {real_percentage:.1f}%, Observed: {obs_bucket:.1f}%)")
+
+            scouter_points = abs(obs_bucket / 100 * robot.magazine_size)
+            hits_error = 100 * abs(scouter_points - points) / points
+            print(f"Hits error: {hits_error:.2f}% (Real: {points}, Observed: {scouter_points})")
             
             if current_fuel > 0:
                 real_accuracy = (points / current_fuel) * 100
-                print(f"Real accuracy: {real_accuracy:.2f}% (Placed: {robot.accuracy * 100:.1f}%)")
+                print(f"\nReal accuracy: {real_accuracy:.2f}% (Placed: {robot.accuracy * 100:.1f}%)")
 
-            print(f"\nTotal shots: {current_fuel} ({points} hits, {misses} misses)")
+            print(f"Total shots: {current_fuel} ({points} hits, {misses} misses)")
 
 if __name__ == "__main__":
     main()
