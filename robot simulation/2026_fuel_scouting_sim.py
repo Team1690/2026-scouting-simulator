@@ -32,7 +32,7 @@ class RobotModel:
             if t > max_time:
                 return float('unc')
                 
-            current_fuel_in_magazine -= self.fire_rate_function(t) * dt + random.gauss(0, 1)
+            current_fuel_in_magazine -= self.fire_rate_function(t) * dt + random.gauss(0, 1) # add some jitter
             t += dt
             
         return t
@@ -107,44 +107,49 @@ def main():
 
     all_robots = [robot1, robot2, robot3]
 
-    magazine_percentage = random.uniform(0.1, 1.0) # random fill between 10% and 100% for the magazine
     scout = ScoutModel() # the simulated scouter
 
-    print(f"Starting simulation (Fuel Level: {magazine_percentage*100:.1f}%)")
 
     for robot in all_robots:
-        if robot.name in robots_to_simulate: # check if we want to run this robot
-            print(f"\nSimulation for: {robot.name}")
+        number_of_volleys = random.randint(1, 6) # random number of vollies to simulate
+        for i in range(number_of_volleys):
+            if robot.name in robots_to_simulate: # check if we want to run this robot
+                print(f"\nSimulation run {i + 1} / {number_of_volleys}")
 
-            print(f"Model settings: Magazine Size: {robot.magazine_size}, Accuracy: {robot.accuracy}")
-            print("\n")
-            
-            current_fuel = round(magazine_percentage * robot.magazine_size)
-            print(f"Fuel amount in magazine: {current_fuel}")
+                magazine_percentage = random.uniform(0.1, 1.0) # random fill between 10% and 100% for the magazine
+                print(f"Starting simulation (Fuel Level: {magazine_percentage*100:.1f}%)")
 
-            points, misses = robot.get_points_for_magazine(magazine_percentage)
-            
-            time_to_empty = robot.time_to_deplete(0.05, magazine_percentage)
-            print(f"Time to deplete: {time_to_empty:.2f}s")
-            
-            obs_time, obs_bucket = scout.recorded_observation_by_scouter(time_to_empty, magazine_percentage)
-            print(f"Scout result: Bucket {obs_bucket}%, [Observer recorded time (perfect): {obs_time:.2f}s]") 
+                print(f"\nSimulation for: {robot.name}")
 
-            print("\nStats:")
-            
-            real_percentage = magazine_percentage * 100
-            error = 100 * abs(obs_bucket - real_percentage) / real_percentage
-            print(f"\nShots error: {error:.2f}% (Real: {real_percentage:.1f}%, Observed: {obs_bucket:.1f}%)")
+                print(f"Model settings: Magazine Size: {robot.magazine_size}, Accuracy: {robot.accuracy}")
+                print("\n")
+                
+                current_fuel = round(magazine_percentage * robot.magazine_size)
+                print(f"Fuel amount in magazine: {current_fuel}")
 
-            scouter_points = abs(obs_bucket / 100 * robot.magazine_size)
-            hits_error = 100 * abs(scouter_points - points) / points
-            print(f"Hits error: {hits_error:.2f}% (Real: {points}, Observed: {scouter_points})")
-            
-            if current_fuel > 0:
-                real_accuracy = (points / current_fuel) * 100
-                print(f"\nReal accuracy: {real_accuracy:.2f}% (Placed: {robot.accuracy * 100:.1f}%)")
+                points, misses = robot.get_points_for_magazine(magazine_percentage)
+                
+                time_to_empty = robot.time_to_deplete(0.05, magazine_percentage)
+                print(f"Time to deplete: {time_to_empty:.2f}s")
+                
+                obs_time, obs_bucket = scout.recorded_observation_by_scouter(time_to_empty, magazine_percentage)
+                print(f"Scout result: Bucket {obs_bucket}%, [Observer recorded time (perfect): {obs_time:.2f}s]") 
 
-            print(f"Total shots: {current_fuel} ({points} hits, {misses} misses)")
+                print("\nStats:")
+                
+                real_percentage = magazine_percentage * 100
+                error = 100 * abs(obs_bucket - real_percentage) / real_percentage
+                print(f"\nShots error: {error:.2f}% (Real: {real_percentage:.1f}%, Observed: {obs_bucket:.1f}%)")
+
+                scouter_points = abs(obs_bucket / 100 * robot.magazine_size)
+                hits_error = 100 * abs(scouter_points - points) / points
+                print(f"Hits error: {hits_error:.2f}% (Real: {points}, Observed: {scouter_points})")
+                
+                if current_fuel > 0:
+                    real_accuracy = (points / current_fuel) * 100
+                    print(f"\nReal accuracy: {real_accuracy:.2f}% (Placed: {robot.accuracy * 100:.1f}%)")
+
+                print(f"Total shots: {current_fuel} ({points} hits, {misses} misses)")
 
 if __name__ == "__main__":
     main()
