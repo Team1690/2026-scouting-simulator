@@ -82,7 +82,7 @@ class ScoutModel:
 
 
 def main():
-    robots_to_simulate = ["Inconsistent shooting with jam - Askof's function"]
+    robots_to_simulate = ["Inconsistent shooting with jam - Askof's function", "Log", "bot1"]
 
     robot1 = RobotModel(
         name="bot1",
@@ -107,7 +107,7 @@ def main():
 
     all_robots = [robot1, robot2, robot3]
 
-    magazine_percentage = random.uniform(0.25, 1.0) # random fill between 25% and 100% for the magazine
+    magazine_percentage = random.uniform(0.1, 1.0) # random fill between 10% and 100% for the magazine
     scout = ScoutModel() # the simulated scouter
 
     print(f"Starting simulation (Fuel Level: {magazine_percentage*100:.1f}%)")
