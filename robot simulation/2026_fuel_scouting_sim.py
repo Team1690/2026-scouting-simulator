@@ -30,7 +30,7 @@ class RobotModel:
 
         while current_fuel_in_magazine > 0:
             if t > max_time:
-                return float('inf')
+                return float('unc')
                 
             current_fuel_in_magazine -= self.fire_rate_function(t) * dt
             t += dt
