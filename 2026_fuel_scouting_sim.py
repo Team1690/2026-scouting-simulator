@@ -30,7 +30,7 @@ class RobotModel:
 
         while current_fuel_in_magazine > 0:
             if t > max_time:
-                return float('unc')
+                return float('inf')
                 
             current_fuel_in_magazine -= self.fire_rate_function(t) * dt + random.gauss(0, 1) # add some jitter
             t += dt
@@ -82,28 +82,30 @@ class ScoutModel:
 
 
 def calculate_error(observed: float, actual: float):
+    if actual == 0:
+        return 0
     return 100 * abs(observed - actual) / actual
 
 def main():
-    robots_to_simulate = ["Inconsistent shooting with jam - Askof's function"]
+    robots_to_simulate = ["Quick fire", "Log", "Inconsistent shooting with jam - Askof's function"]
 
     robot1 = RobotModel(
-        name="bot1",
-        magazine_size=20,
-        accuracy=0.6,
+        name="Quick fire",
+        magazine_size=80,
+        accuracy=0.9,
         fire_rate_function=lambda t: quick_fire(t)
     )
 
     robot2 = RobotModel(
         name="Log",
-        magazine_size=20, 
-        accuracy=0.6, 
+        magazine_size=100,
+        accuracy=0.9, 
         fire_rate_function=lambda t: 2 * math.log(t + 1)
     )
 
     robot3 = RobotModel(
         name="Inconsistent shooting with jam - Askof's function",
-        magazine_size=100,
+        magazine_size=120,
         accuracy=0.9,
         fire_rate_function=inconsistent_jam_fire
     )
@@ -150,7 +152,7 @@ def main():
             
             scouter_shots = obs_bucket / 100 * robot.magazine_size
             error = calculate_error(scouter_shots, current_fuel)
-            print(f"\nShots error: {error:.2f}% (Real: {current_fuel:.1f}, Observed: {scouter_shots:.1f})")
+            print(f"Shots error: {error:.2f}% (Real: {current_fuel:.1f}, Observed: {scouter_shots:.1f})")
 
             scouter_points = abs(obs_bucket / 100 * robot.magazine_size)
             total_scouted_hits += scouter_points # add the points to the total scouted hits
@@ -166,6 +168,7 @@ def main():
         print("\n")
         print(f"=" * 20)
         print(f"SUMMERY RESULTS:")
+        print(f"Robot: {robot.name}")
         print(f"=" * 20)
 
         print(f"\nNumber of volleys: {number_of_volleys}")
