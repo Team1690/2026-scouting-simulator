@@ -32,7 +32,7 @@ class RobotModel:
             if t > max_time:
                 return float('unc')
                 
-            current_fuel_in_magazine -= self.fire_rate_function(t) * dt
+            current_fuel_in_magazine -= self.fire_rate_function(t) * dt + random.gauss(0, 1)
             t += dt
             
         return t
@@ -134,7 +134,7 @@ def main():
             
             real_percentage = magazine_percentage * 100
             error = 100 * abs(obs_bucket - real_percentage) / real_percentage
-            print(f"Shots error: {error:.2f}% (Real: {real_percentage:.1f}%, Observed: {obs_bucket:.1f}%)")
+            print(f"\nShots error: {error:.2f}% (Real: {real_percentage:.1f}%, Observed: {obs_bucket:.1f}%)")
 
             scouter_points = abs(obs_bucket / 100 * robot.magazine_size)
             hits_error = 100 * abs(scouter_points - points) / points
