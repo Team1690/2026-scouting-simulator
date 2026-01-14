@@ -3,12 +3,11 @@ import random
 import math
 
 class RobotModel:
-    def __init__(self, name: str, magazine_size: int, accuracy: float, fire_rate_function, max_fire_rate: float):
+    def __init__(self, name: str, magazine_size: int, accuracy: float, fire_rate_function):
         self.name = name
         self.magazine_size = magazine_size
         self.accuracy = accuracy
         self.fire_rate_function = fire_rate_function
-        self.max_fire_rate = max_fire_rate
 
     def get_points_for_magazine(self, magazine_percentage: float):
         hits = 0
@@ -21,16 +20,16 @@ class RobotModel:
             else:
                 misses += 1
 
-        return hits
+        return hits, misses
 
     def time_to_deplete(self,  dt: float, magazine_percentage: float):
         t = 0.0
         current_fuel_in_magazine = round(self.magazine_size * magazine_percentage)
         
-        MAX_TIME = 1000.0
+        max_time = 1000.0
 
         while current_fuel_in_magazine > 0:
-            if t > MAX_TIME:
+            if t > max_time:
                 return float('inf')
                 
             current_fuel_in_magazine -= self.fire_rate_function(t) * dt
@@ -42,6 +41,7 @@ def quick_fire(t: float):
     return 2.0 if (t - math.floor(t)) < 0.8 else 0.0
 
 def inconsistent_jam_fire(t: float): # askof's function - peeks at 8,
+    t = t % 10 # loop the pattern every 10 seconds (cuz this function stops at 10 x=10 so we need to loop until we finish the fuel at the magazine)
     if 0 <= t <= 1.5:
         return 4 * t
     elif 1.5 < t <= 2:
@@ -82,54 +82,65 @@ class ScoutModel:
 
 
 def main():
-    robot = RobotModel(
+    robots_to_simulate = ["Inconsistent shooting with jam - Askof's function"]
+
+    robot1 = RobotModel(
         name="bot1",
         magazine_size=20,
         accuracy=0.6,
-        fire_rate_function=lambda t: quick_fire(t),
-        max_fire_rate=2.0 
+        fire_rate_function=lambda t: quick_fire(t)
     )
-
-    magazine_percentage = random.random()
-    
-    print(f"Robot name: {robot.name}")
-    print(f"Current Fuel: {round(magazine_percentage * robot.magazine_size)}")
-    print(f"Points for magazine: {robot.get_points_for_magazine(magazine_percentage)}")
-    time_to_deplete = robot.time_to_deplete(0.05, magazine_percentage)
-    print(f"Time to deplete: {time_to_deplete}")
 
     robot2 = RobotModel(
         name="Log",
         magazine_size=20, 
         accuracy=0.6, 
-        fire_rate_function=lambda t: 2 * math.log(t + 1),
-        max_fire_rate=5.0
+        fire_rate_function=lambda t: 2 * math.log(t + 1)
     )
-    
-    print(f"\nRobot name: {robot2.name}")
-    print(f"Current Fuel: {round(magazine_percentage * robot2.magazine_size)}")
-    print(f"Points for magazine: {robot2.get_points_for_magazine(magazine_percentage)}")
-    print(f"Time to deplete: {robot2.time_to_deplete(0.05, magazine_percentage)}")
 
     robot3 = RobotModel(
         name="Inconsistent shooting with jam - Askof's function",
         magazine_size=100,
         accuracy=0.9,
-        fire_rate_function=inconsistent_jam_fire,
-        max_fire_rate=10.0 # peaks at 8
+        fire_rate_function=inconsistent_jam_fire
     )
 
-    print(f"\nRobot name: {robot3.name}")
-    print(f"Current Fuel: {round(magazine_percentage * robot3.magazine_size)}")
-    print(f"Points for magazine: {robot3.get_points_for_magazine(magazine_percentage)}")
-    print(f"Time to deplete: {robot3.time_to_deplete(0.05, magazine_percentage)}")
-    
-    print("\nScout Model Observation:")
-    scout = ScoutModel()
-    observation = scout.recorded_observation_by_scouter(time_to_deplete, magazine_percentage)
-    print(f"Actual Percent: {magazine_percentage*100:.2f}%")
-    print(f"Observed: {observation}")
+    all_robots = [robot1, robot2, robot3]
 
+    magazine_percentage = random.uniform(0.25, 1.0) # random fill between 25% and 100% for the magazine
+    scout = ScoutModel() # the simulated scouter
+
+    print(f"Starting simulation (Fuel Level: {magazine_percentage*100:.1f}%)")
+
+    for robot in all_robots:
+        if robot.name in robots_to_simulate: # check if we want to run this robot
+            print(f"\nSimulation for: {robot.name}")
+
+            print(f"Model settings: Magazine Size: {robot.magazine_size}, Accuracy: {robot.accuracy}")
+            print("\n")
+            
+            current_fuel = round(magazine_percentage * robot.magazine_size)
+            print(f"Fuel amount in magazine: {current_fuel}")
+
+            points, misses = robot.get_points_for_magazine(magazine_percentage)
+            
+            time_to_empty = robot.time_to_deplete(0.05, magazine_percentage)
+            print(f"Time to deplete: {time_to_empty:.2f}s")
+            
+            obs_time, obs_bucket = scout.recorded_observation_by_scouter(time_to_empty, magazine_percentage)
+            print(f"Scout result: Bucket {obs_bucket}%, [Observer recorded time (perfect): {obs_time:.2f}s]") 
+
+            print("\nStats:")
+            
+            real_percentage = magazine_percentage * 100
+            error = abs(real_percentage - obs_bucket)
+            print(f"Error rate: {error:.2f}% (difference between {real_percentage:.2f}% and {obs_bucket}%)")
+            
+            if current_fuel > 0:
+                real_accuracy = (points / current_fuel) * 100
+                print(f"Real accuracy: {real_accuracy:.2f}% (Placed: {robot.accuracy * 100:.1f}%)")
+
+            print(f"\nTotal shots: {current_fuel} ({points} hits, {misses} misses)")
 
 if __name__ == "__main__":
     main()
