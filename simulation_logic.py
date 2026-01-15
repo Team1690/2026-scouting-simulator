@@ -4,7 +4,7 @@ from utils import calculate_error
 from robot_model import RobotModel
 from metrics import MagazineSizeMetric
 
-def simulate_robot(robot: RobotModel, metric: MagazineSizeMetric) -> dict:
+def scout_robot_match(robot: RobotModel, metric: MagazineSizeMetric) -> dict:
     total_shots = 0
     total_hits = 0
     total_scouted_shots = 0

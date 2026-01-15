@@ -17,28 +17,28 @@ robot2 = RobotModel(
 )
 
 robot3 = RobotModel(
-    name="Inconsistent shooting with jam - Askof's function",
+    name="Inconsistent jam",
     magazine_size=100,
     accuracy=0.9,
     fire_rate_function=inconsistent_jam_fire
 )
 
 robot4 = RobotModel(
-    name="Consistent spray fire",
+    name="Consistent spray",
     magazine_size=100,
     accuracy=0.9,
     fire_rate_function=consistent_spray_fire
 )
 
 robot5 = RobotModel(
-    name="Burst then jam fire",
+    name="Burst then jam",
     magazine_size=100,
     accuracy=0.9,
     fire_rate_function=burst_then_jam_fire
 )
 
 robot6 = RobotModel(
-    name="Stutter wave fire",
+    name="Stutter wave",
     magazine_size=100,
     accuracy=0.9,
     fire_rate_function=stutter_wave_fire

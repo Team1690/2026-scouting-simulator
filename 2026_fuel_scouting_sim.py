@@ -36,7 +36,7 @@ def main():
         if robot.name not in robots_to_simulate: # check if we want to run this robot
             continue
 
-        robot_stats = simulate_robot(robot, scout)
+        robot_stats = scout_robot_match(robot, scout)
         robots_data.append(robot_stats)
 
     print(f"\nTeams")
