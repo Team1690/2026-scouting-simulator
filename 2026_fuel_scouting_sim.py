@@ -9,6 +9,9 @@ class RobotModel:
         self.accuracy = accuracy
         self.fire_rate_function = fire_rate_function
 
+    def __repr__(self): # make the robot name show up when we print the robot (ty stack overflow)
+        return self.name
+
     def get_points_for_magazine(self, magazine_percentage: float):
         hits = 0
         misses = 0
@@ -37,10 +40,10 @@ class RobotModel:
             
         return t
 
-def quick_fire(t: float):
+def quick_fire(t: float): # Omer's function - small bursts with brief pauses
     return 2.0 if (t - math.floor(t)) < 0.8 else 0.0
 
-def inconsistent_jam_fire(t: float): # askof's function - peeks at 8,
+def inconsistent_jam_fire(t: float): # askof's function - inconsistent shooting with jams
     t = t % 10 # loop the pattern every 10 seconds (cuz this function stops at 10 x=10 so we need to loop until we finish the fuel at the magazine)
     if 0 <= t <= 1.5:
         return 4 * t
@@ -58,6 +61,87 @@ def inconsistent_jam_fire(t: float): # askof's function - peeks at 8,
         return 2 * t - 13
     elif 8 < t <= 10:
         return -1.5 * t + 15
+    else:
+        return 0.0
+
+def consistent_spray_fire(t: float):  # mostly stable there is small waves and brief reload pauses
+    t = t % 10
+    if 0 <= t <= 1.0:
+        return 8.0 * t
+    elif 1.0 < t <= 2.5:
+        return 8.0
+    elif 2.5 < t <= 3.0:
+        return -10.0 * (t - 2.5) + 8.0
+    elif 3.0 < t <= 3.7:
+        return 3.0 + (3.0 / 0.7) * (t - 3.0)
+    elif 3.7 < t < 4.0:
+        return 0.0
+    elif 4.0 <= t <= 6.5:
+        return 6.5 + 1.5 * math.sin(math.pi * (t - 4.0) / 2.5)
+    elif 6.5 < t < 7.2:
+        return 0.0
+    elif 7.2 <= t <= 10.0:
+        return - (5.0 / 2.8) * (t - 7.2) + 7.0
+    else:
+        return 0.0
+
+
+def burst_then_jam_fire(t: float):  # hard burst with jams and then steady fire
+    t = t % 10
+    if 0 <= t <= 0.6:
+        return 15.0 * t
+    elif 0.6 < t <= 1.0:
+        return 9.0
+    elif 1.0 < t <= 1.2:
+        return 0.0
+    elif 1.2 < t <= 2.0:
+        return 8.0 * math.exp(-2.0 * (t - 1.2))
+    elif 2.0 < t <= 2.5:
+        return 0.0
+    elif 2.5 < t <= 4.0:
+        return (7.0 / 1.5) * (t - 2.5)
+    elif 4.0 < t <= 5.0:
+        return 7.0
+    elif 5.0 < t <= 5.5:
+        return -12.0 * (t - 5.0) + 7.0
+    elif 5.5 < t <= 6.0:
+        return 10.0 * (t - 5.5) + 1.0
+    elif 6.0 < t <= 7.0:
+        return 6.0
+    elif 7.0 < t <= 7.4:
+        return 0.0
+    elif 7.4 < t <= 8.5:
+        x = (t - 7.4) / 1.1
+        return 2.0 + 5.0 * math.log(1.0 + (math.e - 1.0) * x)
+    elif 8.5 < t <= 10.0:
+        return - (4.0 / 1.5) * (t - 8.5) + 7.0
+    else:
+        return 0.0
+
+
+def stutter_wave_fire(t: float):  # lots of “stutter”, waves, multiple short jams, peak ~8
+    t = t % 10
+    if 0 <= t <= 1.0:
+        return 4.0 + 3.0 * math.sin(math.pi * t)
+    elif 1.0 < t <= 1.3:
+        return 0.0
+    elif 1.3 < t <= 3.0:
+        return 2.0 + 5.0 * (1.0 - math.exp(-1.5 * (t - 1.3)))
+    elif 3.0 < t <= 4.0:
+        return -3.0 * (t - 3.0) + 7.0
+    elif 4.0 < t <= 4.2:
+        return 0.0
+    elif 4.2 < t <= 6.0:
+        return 5.5 + 1.5 * math.sin(2.0 * math.pi * (t - 4.2) / 1.2)
+    elif 6.0 < t <= 7.0:
+        return -5.0 * (t - 6.0) + 7.0
+    elif 7.0 < t <= 7.8:
+        return 0.0
+    elif 7.8 < t <= 9.0:
+        u = (t - 7.8) / 1.2
+        return 2.0 + 6.0 * (u * u)
+    elif 9.0 < t <= 10.0:
+        return -5.0 * t + 53.0
     else:
         return 0.0
 
@@ -87,11 +171,11 @@ def calculate_error(observed: float, actual: float):
     return 100 * abs(observed - actual) / actual
 
 def main():
-    robots_to_simulate = ["Quick fire", "Log", "Inconsistent shooting with jam - Askof's function"]
+    robots_to_simulate = ["Quick fire", "Log", "Inconsistent shooting with jam - Askof's function", "Consistent spray fire", "Burst then jam fire", "Stutter wave fire"]
 
     robot1 = RobotModel(
         name="Quick fire",
-        magazine_size=80,
+        magazine_size=100,
         accuracy=0.9,
         fire_rate_function=lambda t: quick_fire(t)
     )
@@ -105,12 +189,51 @@ def main():
 
     robot3 = RobotModel(
         name="Inconsistent shooting with jam - Askof's function",
-        magazine_size=120,
+        magazine_size=100,
         accuracy=0.9,
         fire_rate_function=inconsistent_jam_fire
     )
 
-    all_robots = [robot1, robot2, robot3]
+    robot4 = RobotModel(
+        name="Consistent spray fire",
+        magazine_size=100,
+        accuracy=0.9,
+        fire_rate_function=consistent_spray_fire
+    )
+
+    robot5 = RobotModel(
+        name="Burst then jam fire",
+        magazine_size=100,
+        accuracy=0.9,
+        fire_rate_function=burst_then_jam_fire
+    )
+
+    robot6 = RobotModel(
+        name="Stutter wave fire",
+        magazine_size=100,
+        accuracy=0.9,
+        fire_rate_function=stutter_wave_fire
+    )
+
+    all_robots = [robot1, robot2, robot3, robot4, robot5, robot6]
+
+    # Assigning robots to teams
+    blue_team = []
+    red_team = []
+
+    for i in range(len(all_robots)): # //todo: make this random + make it max at 3 robots per team
+        if i % 2 == 0:
+            blue_team.append(all_robots[i])
+        else:
+            red_team.append(all_robots[i])
+
+    print("Blue Team:")
+    for robot in blue_team:
+        print(f"- {robot.name}")
+
+    print("\nRed Team:")
+    for robot in red_team:
+        print(f"- {robot.name}")
 
     scout = ScoutModel() # the simulated scouter
 
@@ -203,6 +326,10 @@ def main():
             "volleys": number_of_volleys
         }
         robots_data.append(robot_stats) # add the robot stats to the end of the list
+
+    print(f"\nTeams")
+    print(f"Blue team: {blue_team}")
+    print(f"Red team: {red_team}")
 
     print("\n" * 2)
     print("=" * 40)
