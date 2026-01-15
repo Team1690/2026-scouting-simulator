@@ -122,7 +122,7 @@ def main():
 
         total_shots = 0
         total_hits = 0
-        total_scouted_hits = 0
+        total_scouted_shots = 0
 
         number_of_volleys = random.randint(1, 6) # random number of vollies to simulate
         for i in range(number_of_volleys):
@@ -153,12 +153,12 @@ def main():
             
             scouter_shots = obs_bucket / 100 * robot.magazine_size
             error = calculate_error(scouter_shots, current_fuel)
-            print(f"Shots error: {error:.2f}% (Real: {current_fuel:.1f}, Observed: {scouter_shots:.1f})")
+            print(f"Shots error: {error:.2f}% (real: {current_fuel:.1f}, scouted: {scouter_shots:.1f})")
 
-            scouter_points = abs(obs_bucket / 100 * robot.magazine_size)
-            total_scouted_hits += scouter_points # add the points to the total scouted hits
-            hits_error = calculate_error(scouter_points, points)
-            print(f"Hits error: {hits_error:.2f}% (Real: {points}, Observed: {scouter_points})")
+            scouter_shots = abs(obs_bucket / 100 * robot.magazine_size)
+            total_scouted_shots += scouter_shots # add the shots to the total scouted shots
+            shots_vs_hits_error = calculate_error(scouter_shots, points)
+            print(f"Hits error (scouted shots vs actual hits): {shots_vs_hits_error:.2f}% (real hits: {points}, scouted shots: {scouter_shots})")
             
             if current_fuel > 0:
                 real_accuracy = (points / current_fuel) * 100
@@ -176,26 +176,31 @@ def main():
 
         print(f"\nTotal shots: {total_shots}")
         print(f"Total hits: {total_hits}")
-        print(f"Total scouted hits: {total_scouted_hits}")
+        print(f"Total scouted shots: {total_scouted_shots}")
 
         print(f"\nStats:")
 
         total_accuracy = total_hits / total_shots
         print(f"Total accuracy: {100 * total_accuracy:.2f}%")
 
-        total_shots_error = calculate_error(total_scouted_hits, total_shots)
+        total_shots_error = calculate_error(total_scouted_shots, total_shots)
         print(f"Total shots error: {total_shots_error:.2f}%")
 
-        total_hits_error = calculate_error(total_scouted_hits, total_hits)
-        print(f"Total hits error: {total_hits_error:.2f}%")
+        total_hits_vs_shots_error = calculate_error(total_scouted_shots, total_hits)
+        print(f"Total hits error (scouted shots vs actual hits): {total_hits_vs_shots_error:.2f}%")
 
         # save the data for the current robot
         robot_stats = {
             "name": robot.name,
+            "magazine_size": robot.magazine_size,
+            "placed_accuracy": robot.accuracy * 100,
             "accuracy": total_accuracy * 100,
             "shots_error": total_shots_error,
-            "hits_error": total_hits_error,
-            "total_shots": total_shots
+            "hits_error": total_hits_vs_shots_error,
+            "total_shots": total_shots,
+            "total_hits": total_hits,
+            "total_scouted_shots": total_scouted_shots,
+            "volleys": number_of_volleys
         }
         robots_data.append(robot_stats) # add the robot stats to the end of the list
 
@@ -204,13 +209,13 @@ def main():
     print("FINAL COMPARISON OF ALL THE ROBOTS")
     print("=" * 40)
 
-    print(f"Simulation number of runs: {number_of_volleys}")
-
     for data in robots_data:
         print(f"\nRobot Name: {data['name']}")
-        print(f"- Overall Accuracy: {data['accuracy']:.2f}%")
-        print(f"- Average Shots Error: {data['shots_error']:.2f}%")
-        print(f"- Average Hits Error: {data['hits_error']:.2f}%")
+        print(f"magazine size: {data['magazine_size']}")
+        print(f"Simulation runs: {data['volleys']}")
+        print(f"- Overall accuracy: {data['accuracy']:.2f}% (placed: {data['placed_accuracy']:.1f}%)")
+        print(f"- Average shots error: {data['shots_error']:.2f}% (real: {data['total_shots']}, scouted: {data['total_scouted_shots']:.1f})")
+        print(f"- Average hits error: {data['hits_error']:.2f}% (real: {data['total_hits']}, scouted: {data['total_scouted_shots']:.1f})")
 
 if __name__ == "__main__":
     main()
