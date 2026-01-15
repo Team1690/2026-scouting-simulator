@@ -221,7 +221,9 @@ def main():
     blue_team = []
     red_team = []
 
-    for i in range(len(all_robots)): # //todo: make this random + make it max at 3 robots per team
+    all_robots = random.shuffle(all_robots) # cheep way to make the teams random
+
+    for i in range(len(all_robots)): # //todo: make it max at 3 robots per team
         if i % 2 == 0:
             blue_team.append(all_robots[i])
         else:
@@ -249,45 +251,45 @@ def main():
 
         number_of_volleys = random.randint(1, 6) # random number of vollies to simulate
         for i in range(number_of_volleys):
-            print(f"\nSimulation run {i + 1} / {number_of_volleys}")
+            # print(f"\nSimulation run {i + 1} / {number_of_volleys}")
 
             magazine_percentage = random.uniform(0.1, 1.0) # random fill between 10% and 100% for the magazine
-            print(f"Starting simulation (Fuel Level: {magazine_percentage * 100:.1f}%)")
+            # print(f"Starting simulation (Fuel Level: {magazine_percentage * 100:.1f}%)")
 
-            print(f"\nSimulation for: {robot.name}")
+            # print(f"\nSimulation for: {robot.name}")
 
-            print(f"Model settings: Magazine Size: {robot.magazine_size}, Accuracy: {robot.accuracy}")
-            print("\n")
+            # print(f"Model settings: Magazine Size: {robot.magazine_size}, Accuracy: {robot.accuracy}")
+            # print("\n")
             
             current_fuel = round(magazine_percentage * robot.magazine_size)
             total_shots += current_fuel # add the fuel to the total shots
-            print(f"Fuel amount in magazine: {current_fuel}")
+            # print(f"Fuel amount in magazine: {current_fuel}")
 
             points, misses = robot.get_points_for_magazine(magazine_percentage)
             total_hits += points # add the points to the total hits
             
             time_to_empty = robot.time_to_deplete(0.05, magazine_percentage)
-            print(f"Time to deplete: {time_to_empty:.2f}s")
+            # print(f"Time to deplete: {time_to_empty:.2f}s")
             
             obs_time, obs_bucket = scout.recorded_observation_by_scouter(time_to_empty, magazine_percentage)
-            print(f"Scout result: Bucket {obs_bucket}%, [Observer recorded time (perfect): {obs_time:.2f}s]") 
+            # print(f"Scout result: Bucket {obs_bucket}%, [Observer recorded time (perfect): {obs_time:.2f}s]") 
 
-            print("\nStats:")
+            # print("\nStats:")
             
             scouter_shots = obs_bucket / 100 * robot.magazine_size
             error = calculate_error(scouter_shots, current_fuel)
-            print(f"Shots error: {error:.2f}% (real: {current_fuel:.1f}, scouted: {scouter_shots:.1f})")
+            # print(f"Shots error: {error:.2f}% (real: {current_fuel:.1f}, scouted: {scouter_shots:.1f})")
 
             scouter_shots = abs(obs_bucket / 100 * robot.magazine_size)
             total_scouted_shots += scouter_shots # add the shots to the total scouted shots
             shots_vs_hits_error = calculate_error(scouter_shots, points)
-            print(f"Hits error (scouted shots vs actual hits): {shots_vs_hits_error:.2f}% (real hits: {points}, scouted shots: {scouter_shots})")
+            # print(f"Hits error (scouted shots vs actual hits): {shots_vs_hits_error:.2f}% (real hits: {points}, scouted shots: {scouter_shots})")
             
             if current_fuel > 0:
                 real_accuracy = (points / current_fuel) * 100
-                print(f"\nReal accuracy: {real_accuracy:.2f}% (Placed: {robot.accuracy * 100:.1f}%)")
+                # print(f"\nReal accuracy: {real_accuracy:.2f}% (Placed: {robot.accuracy * 100:.1f}%)")
 
-            print(f"Total shots: {current_fuel} ({points} hits, {misses} misses)")
+            # print(f"Total shots: {current_fuel} ({points} hits, {misses} misses)")
             
         print("\n")
         print(f"=" * 20)
