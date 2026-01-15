@@ -1,4 +1,4 @@
-class MagazineSizeMatric:
+class MagazineSizeMetric:
     def __init__(self):
         self.buckets = [25, 50, 75, 100]
 

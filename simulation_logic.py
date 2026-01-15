@@ -2,9 +2,9 @@ from __future__ import annotations
 import random
 from utils import calculate_error
 from robot_model import RobotModel
-from matrics import MagazineSizeMatric
+from metrics import MagazineSizeMetric
 
-def simulate_robot(robot: RobotModel, scout: MagazineSizeMatric) -> dict:
+def simulate_robot(robot: RobotModel, metric: MagazineSizeMetric) -> dict:
     total_shots = 0
     total_hits = 0
     total_scouted_shots = 0
@@ -31,7 +31,7 @@ def simulate_robot(robot: RobotModel, scout: MagazineSizeMatric) -> dict:
         time_to_empty = robot.time_to_deplete(0.05, magazine_percentage)
         # print(f"Time to deplete: {time_to_empty:.2f}s")
 
-        obs_time, obs_bucket = scout.recorded_observation_by_scouter(time_to_empty, magazine_percentage)
+        obs_time, obs_bucket = metric.recorded_observation_by_scouter(time_to_empty, magazine_percentage)
         # print(f"Scout result: Bucket {obs_bucket}%, [Observer recorded time (perfect): {obs_time:.2f}s]")
 
         # print("\nStats:")
@@ -90,5 +90,5 @@ def simulate_robot(robot: RobotModel, scout: MagazineSizeMatric) -> dict:
         "total_scouted_shots": total_scouted_shots,
         "volleys": number_of_volleys
     }
-    
+
     return robot_stats

@@ -1,9 +1,9 @@
 from __future__ import annotations
 import random
-from robot_model import RobotModel
-from matrics import MagazineSizeMatric
-from simulation_logic import simulate_robot
-from robot_configs import all_robots
+from robot_model import *
+from metrics import *
+from simulation_logic import *
+from robot_configs import *
 
 def main():
     robots_to_simulate = ["Quick fire", "Log", "Inconsistent shooting with jam - Askof's function", "Consistent spray fire", "Burst then jam fire", "Stutter wave fire"]
@@ -28,7 +28,7 @@ def main():
     for robot in red_team:
         print(f"- {robot.name}")
 
-    scout = MagazineSizeMatric() # the simulated scouter
+    scout = MagazineSizeMetric() # the simulated scouter
 
     robots_data = [] # a robot spesific data
 
