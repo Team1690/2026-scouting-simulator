@@ -1,221 +1,13 @@
 from __future__ import annotations
 import random
 import math
-
-class RobotModel:
-    def __init__(self, name: str, magazine_size: int, accuracy: float, fire_rate_function):
-        self.name = name
-        self.magazine_size = magazine_size
-        self.accuracy = accuracy
-        self.fire_rate_function = fire_rate_function
-
-    def __repr__(self): # make the robot name show up when we print the robot (ty stack overflow)
-        return self.name
-
-    def get_points_for_magazine(self, magazine_percentage: float):
-        hits = 0
-        misses = 0
-        
-        shots_count = round(self.magazine_size * magazine_percentage)
-        for _ in range(shots_count):
-            if random.random() < self.accuracy:
-                hits += 1
-            else:
-                misses += 1
-
-        return hits, misses
-
-    def time_to_deplete(self,  dt: float, magazine_percentage: float):
-        t = 0.0
-        current_fuel_in_magazine = round(self.magazine_size * magazine_percentage)
-        
-        max_time = 1000.0
-
-        while current_fuel_in_magazine > 0:
-            if t > max_time:
-                return float('inf')
-                
-            current_fuel_in_magazine -= self.fire_rate_function(t) * dt + random.gauss(0, 1) # add some jitter
-            t += dt
-            
-        return t
-
-def quick_fire(t: float): # Omer's function - small bursts with brief pauses
-    return 2.0 if (t - math.floor(t)) < 0.8 else 0.0
-
-def inconsistent_jam_fire(t: float): # askof's function - inconsistent shooting with jams
-    t = t % 10 # loop the pattern every 10 seconds (cuz this function stops at 10 x=10 so we need to loop until we finish the fuel at the magazine)
-    if 0 <= t <= 1.5:
-        return 4 * t
-    elif 1.5 < t <= 2:
-        return -2 * t + 9
-    elif 2 < t <= 3:
-        return 5 + 3 * math.log(1 + (math.e - 1) * (t - 2))
-    elif 3 < t < 4:
-        return 0.0
-    elif 4 <= t <= 6:
-        return 4 * t - 16
-    elif 6 < t <= 7.5:
-        return -4 * t + 32
-    elif 7.5 < t <= 8:
-        return 2 * t - 13
-    elif 8 < t <= 10:
-        return -1.5 * t + 15
-    else:
-        return 0.0
-
-def consistent_spray_fire(t: float):  # mostly stable there is small waves and brief reload pauses
-    t = t % 10
-    if 0 <= t <= 1.0:
-        return 8.0 * t
-    elif 1.0 < t <= 2.5:
-        return 8.0
-    elif 2.5 < t <= 3.0:
-        return -10.0 * (t - 2.5) + 8.0
-    elif 3.0 < t <= 3.7:
-        return 3.0 + (3.0 / 0.7) * (t - 3.0)
-    elif 3.7 < t < 4.0:
-        return 0.0
-    elif 4.0 <= t <= 6.5:
-        return 6.5 + 1.5 * math.sin(math.pi * (t - 4.0) / 2.5)
-    elif 6.5 < t < 7.2:
-        return 0.0
-    elif 7.2 <= t <= 10.0:
-        return - (5.0 / 2.8) * (t - 7.2) + 7.0
-    else:
-        return 0.0
-
-
-def burst_then_jam_fire(t: float):  # hard burst with jams and then steady fire
-    t = t % 10
-    if 0 <= t <= 0.6:
-        return 15.0 * t
-    elif 0.6 < t <= 1.0:
-        return 9.0
-    elif 1.0 < t <= 1.2:
-        return 0.0
-    elif 1.2 < t <= 2.0:
-        return 8.0 * math.exp(-2.0 * (t - 1.2))
-    elif 2.0 < t <= 2.5:
-        return 0.0
-    elif 2.5 < t <= 4.0:
-        return (7.0 / 1.5) * (t - 2.5)
-    elif 4.0 < t <= 5.0:
-        return 7.0
-    elif 5.0 < t <= 5.5:
-        return -12.0 * (t - 5.0) + 7.0
-    elif 5.5 < t <= 6.0:
-        return 10.0 * (t - 5.5) + 1.0
-    elif 6.0 < t <= 7.0:
-        return 6.0
-    elif 7.0 < t <= 7.4:
-        return 0.0
-    elif 7.4 < t <= 8.5:
-        x = (t - 7.4) / 1.1
-        return 2.0 + 5.0 * math.log(1.0 + (math.e - 1.0) * x)
-    elif 8.5 < t <= 10.0:
-        return - (4.0 / 1.5) * (t - 8.5) + 7.0
-    else:
-        return 0.0
-
-
-def stutter_wave_fire(t: float):  # lots of “stutter”, waves, multiple short jams, peak ~8
-    t = t % 10
-    if 0 <= t <= 1.0:
-        return 4.0 + 3.0 * math.sin(math.pi * t)
-    elif 1.0 < t <= 1.3:
-        return 0.0
-    elif 1.3 < t <= 3.0:
-        return 2.0 + 5.0 * (1.0 - math.exp(-1.5 * (t - 1.3)))
-    elif 3.0 < t <= 4.0:
-        return -3.0 * (t - 3.0) + 7.0
-    elif 4.0 < t <= 4.2:
-        return 0.0
-    elif 4.2 < t <= 6.0:
-        return 5.5 + 1.5 * math.sin(2.0 * math.pi * (t - 4.2) / 1.2)
-    elif 6.0 < t <= 7.0:
-        return -5.0 * (t - 6.0) + 7.0
-    elif 7.0 < t <= 7.8:
-        return 0.0
-    elif 7.8 < t <= 9.0:
-        u = (t - 7.8) / 1.2
-        return 2.0 + 6.0 * (u * u)
-    elif 9.0 < t <= 10.0:
-        return -5.0 * t + 53.0
-    else:
-        return 0.0
-
-
-class ScoutModel:
-    def __init__(self):
-        self.buckets = [25, 50, 75, 100]
-
-    def recorded_observation_by_scouter(self, time_observed, actual_percentage):
-        percentage_val = actual_percentage * 100 # convert from a number between 0 and 1 to a percentage (between 0 and 100)
-        
-        closest_bucket = self.buckets[0] # start with an initial closest guess
-        min_diff = abs(percentage_val - self.buckets[0]) # start with an initial closest diff
-        
-        for bucket in self.buckets: # loop through all buckets to find the real closest one (ik there is a better way but this what I could think of)
-            diff = abs(percentage_val - bucket)
-            if diff < min_diff:
-                min_diff = diff
-                closest_bucket = bucket
-                
-        return time_observed, closest_bucket
-
-
-def calculate_error(observed: float, actual: float):
-    if actual == 0:
-        return 0 if observed == 0 else observed * 100
-    return 100 * abs(observed - actual) / actual
+from robot_model import RobotModel
+from matrics import MagazineSizeMatric
+from utils import calculate_error
+from robot_configs import all_robots
 
 def main():
     robots_to_simulate = ["Quick fire", "Log", "Inconsistent shooting with jam - Askof's function", "Consistent spray fire", "Burst then jam fire", "Stutter wave fire"]
-
-    robot1 = RobotModel(
-        name="Quick fire",
-        magazine_size=100,
-        accuracy=0.9,
-        fire_rate_function=lambda t: quick_fire(t)
-    )
-
-    robot2 = RobotModel(
-        name="Log",
-        magazine_size=100,
-        accuracy=0.9, 
-        fire_rate_function=lambda t: 2 * math.log(t + 1)
-    )
-
-    robot3 = RobotModel(
-        name="Inconsistent shooting with jam - Askof's function",
-        magazine_size=100,
-        accuracy=0.9,
-        fire_rate_function=inconsistent_jam_fire
-    )
-
-    robot4 = RobotModel(
-        name="Consistent spray fire",
-        magazine_size=100,
-        accuracy=0.9,
-        fire_rate_function=consistent_spray_fire
-    )
-
-    robot5 = RobotModel(
-        name="Burst then jam fire",
-        magazine_size=100,
-        accuracy=0.9,
-        fire_rate_function=burst_then_jam_fire
-    )
-
-    robot6 = RobotModel(
-        name="Stutter wave fire",
-        magazine_size=100,
-        accuracy=0.9,
-        fire_rate_function=stutter_wave_fire
-    )
-
-    all_robots = [robot1, robot2, robot3, robot4, robot5, robot6]
 
     # Assigning robots to teams
     blue_team = []
@@ -237,7 +29,7 @@ def main():
     for robot in red_team:
         print(f"- {robot.name}")
 
-    scout = ScoutModel() # the simulated scouter
+    scout = MagazineSizeMatric() # the simulated scouter
 
     robots_data = [] # a robot spesific data
 
@@ -260,22 +52,22 @@ def main():
 
             # print(f"Model settings: Magazine Size: {robot.magazine_size}, Accuracy: {robot.accuracy}")
             # print("\n")
-            
+
             current_fuel = round(magazine_percentage * robot.magazine_size)
             total_shots += current_fuel # add the fuel to the total shots
             # print(f"Fuel amount in magazine: {current_fuel}")
 
             points, misses = robot.get_points_for_magazine(magazine_percentage)
             total_hits += points # add the points to the total hits
-            
+
             time_to_empty = robot.time_to_deplete(0.05, magazine_percentage)
             # print(f"Time to deplete: {time_to_empty:.2f}s")
-            
+
             obs_time, obs_bucket = scout.recorded_observation_by_scouter(time_to_empty, magazine_percentage)
-            # print(f"Scout result: Bucket {obs_bucket}%, [Observer recorded time (perfect): {obs_time:.2f}s]") 
+            # print(f"Scout result: Bucket {obs_bucket}%, [Observer recorded time (perfect): {obs_time:.2f}s]")
 
             # print("\nStats:")
-            
+
             scouter_shots = obs_bucket / 100 * robot.magazine_size
             error = calculate_error(scouter_shots, current_fuel)
             # print(f"Shots error: {error:.2f}% (real: {current_fuel:.1f}, scouted: {scouter_shots:.1f})")
@@ -284,13 +76,13 @@ def main():
             total_scouted_shots += scouter_shots # add the shots to the total scouted shots
             shots_vs_hits_error = calculate_error(scouter_shots, points)
             # print(f"Hits error (scouted shots vs actual hits): {shots_vs_hits_error:.2f}% (real hits: {points}, scouted shots: {scouter_shots})")
-            
+
             if current_fuel > 0:
                 real_accuracy = (points / current_fuel) * 100
                 # print(f"\nReal accuracy: {real_accuracy:.2f}% (Placed: {robot.accuracy * 100:.1f}%)")
 
             # print(f"Total shots: {current_fuel} ({points} hits, {misses} misses)")
-            
+
         print("\n")
         print(f"=" * 20)
         print(f"SUMMERY RESULTS:")
@@ -362,12 +154,12 @@ def main():
                 blue_total_shots += data["total_shots"]
                 blue_total_hits += data["total_hits"]
                 blue_total_scouted += data["total_scouted_shots"]
-    
+
     print("\nBlue Team Stats:")
     print(f"Robots in team: {[r.name for r in blue_team]}")
     print(f"Total Shots: {blue_total_shots}")
     print(f"Total Hits: {blue_total_hits}")
-    print(f"Total Scouted Shots: {blue_total_scouted:.2f}")    
+    print(f"Total Scouted Shots: {blue_total_scouted:.2f}")
 
     # red team stats
     red_total_shots = 0
