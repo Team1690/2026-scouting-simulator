@@ -17,7 +17,7 @@ robot2 = RobotModel(
 )
 
 robot3 = RobotModel(
-    name="Inconsistent jam",
+    name="Inconsistent jam - Askof's function",
     magazine_size=100,
     accuracy=0.9,
     fire_rate_function=inconsistent_jam_fire
@@ -121,4 +121,53 @@ robot17 = RobotModel(
     fire_rate_function=jammy_fire
 )
 
-all_robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8, robot9, robot10, robot11, robot12, robot13, robot14, robot15, robot16, robot17]
+robot18 = RobotModel(
+    name="y=6",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=lambda t: 6.0
+)
+
+robot19 = RobotModel(
+    name="y=abs(2sin(t))",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=lambda t: abs(2 * math.sin(t))
+)
+
+robot20 = RobotModel(
+    name="y=abs(t)",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=lambda t: abs(t)
+)
+
+robot21 = RobotModel(
+    name="y=10",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=lambda t: 10
+)
+
+robot22 = RobotModel(
+    name="sqrt",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=lambda t: math.sqrt(t)
+)
+
+robot23 = RobotModel(
+    name="67",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=six_seven
+)
+
+robot24 = RobotModel(
+    name="t^2",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=lambda t: t * t
+)
+
+all_robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8, robot9, robot10, robot11, robot12, robot13, robot14, robot15, robot16, robot17, robot18, robot19, robot20, robot21, robot22, robot23, robot24]

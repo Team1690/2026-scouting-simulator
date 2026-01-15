@@ -171,3 +171,9 @@ def jammy_fire(t: float):  # mostly good, but frequent tiny jams
     if x < 0.12:
         return 0.0
     return max(0.0, base + 0.7 * math.sin(2.0 * math.pi * t / 2.5))
+
+def six_seven(t: float):  # 67
+    t = t % 10
+    if t <= 5.0:
+        return 6.0 + 0.2 * t
+    return 6.0 + 0.2 * (10.0 - t)
