@@ -114,6 +114,7 @@ def main():
 
     scout = ScoutModel() # the simulated scouter
 
+    robots_data = [] # a robot spesific data
 
     for robot in all_robots:
         if robot.name not in robots_to_simulate: # check if we want to run this robot
@@ -188,7 +189,28 @@ def main():
         total_hits_error = calculate_error(total_scouted_hits, total_hits)
         print(f"Total hits error: {total_hits_error:.2f}%")
 
-        
+        # save the data for the current robot
+        robot_stats = {
+            "name": robot.name,
+            "accuracy": total_accuracy * 100,
+            "shots_error": total_shots_error,
+            "hits_error": total_hits_error,
+            "total_shots": total_shots
+        }
+        robots_data.append(robot_stats) # add the robot stats to the end of the list
+
+    print("\n" * 2)
+    print("=" * 40)
+    print("FINAL COMPARISON OF ALL THE ROBOTS")
+    print("=" * 40)
+
+    print(f"Simulation number of runs: {number_of_volleys}")
+
+    for data in robots_data:
+        print(f"\nRobot Name: {data['name']}")
+        print(f"- Overall Accuracy: {data['accuracy']:.2f}%")
+        print(f"- Average Shots Error: {data['shots_error']:.2f}%")
+        print(f"- Average Hits Error: {data['hits_error']:.2f}%")
 
 if __name__ == "__main__":
     main()
