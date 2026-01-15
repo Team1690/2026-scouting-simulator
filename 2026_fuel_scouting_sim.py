@@ -180,8 +180,8 @@ def main():
 
         print(f"\nStats:")
 
-        total_accuracy = total_hits / total_shots
-        print(f"Total accuracy: {100 * total_accuracy:.2f}%")
+        total_accuracy = 100 * (total_hits / total_shots)
+        print(f"Total accuracy: {total_accuracy:.2f}%")
 
         total_shots_error = calculate_error(total_scouted_shots, total_shots)
         print(f"Total shots error: {total_shots_error:.2f}%")
@@ -194,7 +194,7 @@ def main():
             "name": robot.name,
             "magazine_size": robot.magazine_size,
             "placed_accuracy": robot.accuracy * 100,
-            "accuracy": total_accuracy * 100,
+            "accuracy": total_accuracy,
             "shots_error": total_shots_error,
             "hits_error": total_hits_vs_shots_error,
             "total_shots": total_shots,
