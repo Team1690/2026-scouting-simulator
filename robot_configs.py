@@ -44,4 +44,81 @@ robot6 = RobotModel(
     fire_rate_function=stutter_wave_fire
 )
 
-all_robots = [robot1, robot2, robot3, robot4, robot5, robot6]
+robot7 = RobotModel(
+    name="Steady fire",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=steady_fire
+)
+
+robot8 = RobotModel(
+    name="Warmup fire",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=warmup_fire
+)
+
+robot9 = RobotModel(
+    name="Saw fire",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=saw_fire
+)
+
+robot10 = RobotModel(
+    name="Triangle fire",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=triangle_fire
+)
+
+robot11 = RobotModel(
+    name="Double pulse fire",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=double_pulse_fire
+)
+
+robot12 = RobotModel(
+    name="Exp decay fire",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=exp_decay_fire
+)
+
+robot13 = RobotModel(
+    name="Exp ramp fire",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=exp_ramp_fire
+)
+
+robot14 = RobotModel(
+    name="Log ramp fire",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=log_ramp_fire
+)
+
+robot15 = RobotModel(
+    name="Spike fire",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=spike_fire
+)
+
+robot16 = RobotModel(
+    name="End push fire",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=end_push_fire
+)
+
+robot17 = RobotModel(
+    name="Jammy fire",
+    magazine_size=100,
+    accuracy=0.9,
+    fire_rate_function=jammy_fire
+)
+
+all_robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8, robot9, robot10, robot11, robot12, robot13, robot14, robot15, robot16, robot17]

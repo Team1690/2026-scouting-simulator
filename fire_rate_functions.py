@@ -104,3 +104,70 @@ def stutter_wave_fire(t: float):  # lots of “stutter”, waves, multiple short
         return -5.0 * t + 53.0
     else:
         return 0.0
+
+def steady_fire(t: float):  # constant stream
+    return 6.0
+
+def warmup_fire(t: float):  # ramps up then holds
+    t = t % 10
+    if t <= 1.0:
+        return 8.0 * t
+    return 8.0
+
+def saw_fire(t: float):  # sawtooth 0->8 repeating
+    t = t % 10
+    return 0.8 * t
+
+def triangle_fire(t: float):  # triangle wave peak at t=5
+    t = t % 10
+    if t <= 5.0:
+        return 1.6 * t
+    return 1.6 * (10.0 - t)
+
+def double_pulse_fire(t: float):  # two quick pulses then rest (per 1s)
+    x = t % 1.0
+    if x < 0.25:
+        return 7.5
+    if x < 0.35:
+        return 0.0
+    if x < 0.60:
+        return 7.5
+    return 0.0
+
+def exp_decay_fire(t: float):  # starts high then decays
+    t = t % 10
+    return 9.0 * math.exp(-0.35 * t)
+
+def exp_ramp_fire(t: float):  # “spins up” quickly then saturates
+    t = t % 10
+    return 8.0 * (1.0 - math.exp(-1.2 * t))
+
+def log_ramp_fire(t: float):  # slower early ramp, faster later
+    t = t % 10
+    x = t / 10.0
+    return 8.0 * math.log(1.0 + (math.e - 1.0) * x)
+
+def spike_fire(t: float):  # steady with occasional spikes
+    t = t % 10
+    x = t % 2.0
+    if x < 0.2:
+        return 11.0
+    return 5.8
+
+def end_push_fire(t: float):  # low early, aggressive late (endgame vibe)
+    t = t % 10
+    if t < 6.5:
+        return 4.5
+    if t < 7.0:
+        return 0.0
+    if t < 10.0:
+        return 6.0 + 2.0 * (t - 7.0) / 3.0
+    return 0.0
+
+def jammy_fire(t: float):  # mostly good, but frequent tiny jams
+    t = t % 10
+    base = 7.0
+    x = t % 1.25
+    if x < 0.12:
+        return 0.0
+    return max(0.0, base + 0.7 * math.sin(2.0 * math.pi * t / 2.5))
