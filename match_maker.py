@@ -1,6 +1,7 @@
 from robot_model import RobotModel
 import math
 import random
+from tqdm import tqdm
 
 class Match:
     def __init__(self, red_alliance: tuple[RobotModel, RobotModel, RobotModel], blue_alliance: tuple[RobotModel, RobotModel, RobotModel]):
@@ -16,7 +17,7 @@ def make_matches(robots: list[RobotModel], matches_per_robot: int, iterations: i
     best_scheduled_score = 0
     best_matches: list[Match] = []
 
-    for iteration in range(iterations):
+    for iteration in tqdm(range(iterations)):
         matches: list[Match] = []
 
         for _ in range(matches_per_robot):
@@ -34,28 +35,31 @@ def make_matches(robots: list[RobotModel], matches_per_robot: int, iterations: i
         for robot in robots:
             scheduled_scores[robot.name] = {}
 
+            for robot2 in robots:
+                scheduled_scores[robot.name][robot2.name] = 0
+
         for match in matches:
             for i in range(3):
                 for j in range(3):
                     if i != j:
-                        scheduled_scores[match.red_alliance[i]][match.red_alliance[j]] += 1
-                        scheduled_scores[match.red_alliance[i]][match.red_alliance[j]] *= 3
+                        scheduled_scores[match.red_alliance[i].name][match.red_alliance[j].name] += 1
+                        scheduled_scores[match.red_alliance[i].name][match.red_alliance[j].name] *= 3
 
             for i in range(3):
                 for j in range(3):
-                    scheduled_scores[match.red_alliance[i]][match.blue_alliance[j]] += 1
-                    scheduled_scores[match.red_alliance[i]][match.blue_alliance[j]] *= 2
+                    scheduled_scores[match.red_alliance[i].name][match.blue_alliance[j].name] += 1
+                    scheduled_scores[match.red_alliance[i].name][match.blue_alliance[j].name] *= 2
 
             for i in range(3):
                 for j in range(3):
                     if i != j:
-                        scheduled_scores[match.blue_alliance[i]][match.blue_alliance[j]] += 1
-                        scheduled_scores[match.blue_alliance[i]][match.blue_alliance[j]] *= 3
+                        scheduled_scores[match.blue_alliance[i].name][match.blue_alliance[j].name] += 1
+                        scheduled_scores[match.blue_alliance[i].name][match.blue_alliance[j].name] *= 3
 
             for i in range(3):
                 for j in range(3):
-                    scheduled_scores[match.blue_alliance[i]][match.red_alliance[j]] += 1
-                    scheduled_scores[match.blue_alliance[i]][match.red_alliance[j]] *= 2
+                    scheduled_scores[match.blue_alliance[i].name][match.red_alliance[j].name] += 1
+                    scheduled_scores[match.blue_alliance[i].name][match.red_alliance[j].name] *= 2
 
         scheduled_score = 0
         for scores in scheduled_scores.values():

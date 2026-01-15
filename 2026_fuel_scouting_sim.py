@@ -1,4 +1,5 @@
 from __future__ import annotations
+from match_maker import make_matches
 import random
 from robot_model import *
 from metrics import *
@@ -6,7 +7,16 @@ from simulation_logic import *
 from robot_configs import *
 
 def main():
-    robots_to_simulate = ["Quick fire", "Log", "Inconsistent shooting with jam - Askof's function", "Consistent spray fire", "Burst then jam fire", "Stutter wave fire"]
+
+    schedule, schedule_score = make_matches(all_robots, 10, 100000)
+    i=0
+    for match in schedule:
+        print(f"Match {i}: {match.red_alliance} vs {match.blue_alliance}")
+        i+=1
+    print(f"Schedule score: {schedule_score}")
+    return
+
+    robots_to_simulate = ["Quick fire", "Log", "Inconsistent shooting with jam - Askof's function", "Consistent spray fire", "Burst then jam fire", "Stutter wave fire", "Steady fire", "Warmup fire", "Saw fire", "Triangle fire", "Double pulse fire", "Exp decay fire", "Exp ramp fire", "Log ramp fire", "Spike fire", "End push fire", "Jammy fire", "y=6", "67", "t^2"]
 
     # Assigning robots to teams
     blue_team = []
