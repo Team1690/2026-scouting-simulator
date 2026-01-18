@@ -8,6 +8,7 @@ def scout_robot_match(robot: RobotModel, metric: MagazineSizeMetric) -> dict:
     total_shots = 0
     total_hits = 0
     total_scouted_shots = 0
+    total_time_to_empty = 0
 
     number_of_volleys = random.randint(1, 6) # random number of vollies to simulate
     for i in range(number_of_volleys):
@@ -29,6 +30,7 @@ def scout_robot_match(robot: RobotModel, metric: MagazineSizeMetric) -> dict:
         total_hits += points # add the points to the total hits
 
         time_to_empty = robot.time_to_deplete(0.05, magazine_percentage)
+        total_time_to_empty += time_to_empty
         # print(f"Time to deplete: {time_to_empty:.2f}s")
 
         obs_time, obs_bucket = metric.recorded_observation_by_scouter(time_to_empty, magazine_percentage)
@@ -70,6 +72,7 @@ def scout_robot_match(robot: RobotModel, metric: MagazineSizeMetric) -> dict:
     robot_stats = {
         "name": robot.name,
         "magazine_size": robot.magazine_size,
+        "max_fire_rate": robot.max_fire_rate,
         "placed_accuracy": robot.accuracy * 100,
         "accuracy": total_accuracy,
         "shots_error": total_shots_error,
@@ -77,7 +80,8 @@ def scout_robot_match(robot: RobotModel, metric: MagazineSizeMetric) -> dict:
         "total_shots": total_shots,
         "total_hits": total_hits,
         "total_scouted_shots": total_scouted_shots,
-        "volleys": number_of_volleys
+        "volleys": number_of_volleys,
+        "total_fire_time": total_time_to_empty,
     }
 
     return robot_stats

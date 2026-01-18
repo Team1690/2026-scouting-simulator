@@ -1,9 +1,10 @@
 import random
 
 class RobotModel:
-    def __init__(self, name: str, magazine_size: int, accuracy: float, fire_rate_function):
+    def __init__(self, name: str, magazine_size: int, max_fire_rate: float, accuracy: float, fire_rate_function):
         self.name = name
         self.magazine_size = magazine_size
+        self.max_fire_rate = max_fire_rate
         self.accuracy = accuracy
         self.fire_rate_function = fire_rate_function
 
