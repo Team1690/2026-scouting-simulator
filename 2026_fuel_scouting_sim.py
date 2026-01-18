@@ -7,8 +7,10 @@ from simulation_logic import *
 from robot_configs import *
 
 def main():
+    MATCHES_PER_ROBOT = 10
+    ITERATIONS = 100000
 
-    schedule, schedule_score = make_matches(all_robots, 10, 100000)
+    schedule, schedule_score = make_matches(all_robots, MATCHES_PER_ROBOT, ITERATIONS)
     i=0
     for match in schedule:
         print(f"Match {i}: {match.red_alliance} vs {match.blue_alliance}")
