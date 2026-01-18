@@ -5,6 +5,7 @@ from robot_model import *
 from metrics import *
 from simulation_logic import *
 from robot_configs import *
+from utils import *
 
 def main():
     MATCHES_PER_ROBOT = 10
@@ -48,7 +49,81 @@ def main():
     print(f"Schedule Score: {schedule_score}")
     print("Simulation completed!")
     print(f"Total matches simulated: {len(match_results)}")
-    print("\n") # as I did before the terminal line next to it is just annoying
+
+    final_robot_stats = {} # empty dictionary to store totals
+
+    for match_info in match_results:
+        for robot_data in match_info["red_team_stats"]: # for every robot in the red team
+            name = robot_data["name"]
+
+            if name not in final_robot_stats: # if we haven't seen this robot before
+                final_robot_stats[name] = {
+                    "total_shots_fired": 0,
+                    "total_shots_hit": 0,
+                    "total_shots_scouted": 0,
+                    "matches_played": 0,
+                    "volleys_fired": 0,
+                    "placed_accuracy": robot_data["placed_accuracy"],
+                }
+
+            # Add the data from this match to the total
+            final_robot_stats[name]["total_shots_fired"] += robot_data["total_shots"]
+            final_robot_stats[name]["total_shots_hit"] += robot_data["total_hits"]
+            final_robot_stats[name]["total_shots_scouted"] += robot_data["total_scouted_shots"]
+            final_robot_stats[name]["matches_played"] += 1
+            final_robot_stats[name]["volleys_fired"] += robot_data["volleys"]
+
+        # Do the blue team (same exact thing)
+        for robot_data in match_info["blue_team_stats"]:
+            name = robot_data["name"]
+
+            if name not in final_robot_stats:
+                final_robot_stats[name] = {
+                    "total_shots_fired": 0,
+                    "total_shots_hit": 0,
+                    "total_shots_scouted": 0,
+                    "matches_played": 0,
+                    "volleys_fired": 0,
+                    "placed_accuracy": robot_data["placed_accuracy"],
+                }
+
+            final_robot_stats[name]["total_shots_fired"] += robot_data["total_shots"]
+            final_robot_stats[name]["total_shots_hit"] += robot_data["total_hits"]
+            final_robot_stats[name]["total_shots_scouted"] += robot_data["total_scouted_shots"]
+            final_robot_stats[name]["matches_played"] += 1
+            final_robot_stats[name]["volleys_fired"] += robot_data["volleys"]
+
+    print("\n")
+    print("=" * 40)
+    print("FINAL RESULTS FOR EACH ROBOT")
+    print("=" * 40)
+    print("\n")
+
+    robot_names_list = list(final_robot_stats.keys()) # get the list of names
+    robot_names_list.sort() # sort them (look better)
+
+    for name in robot_names_list:
+        data = final_robot_stats[name]
+
+        shots = data["total_shots_fired"]
+        hits = data["total_shots_hit"]
+        scouted = data["total_shots_scouted"]
+
+        # calculate accuracy and prevent division by zero
+        if shots > 0:
+            real_acc = (hits / shots) * 100
+        else:
+            real_acc = 0
+
+        shot_error = calculate_error(scouted, shots)
+        hit_error = calculate_error(scouted, hits)
+
+        print(f"Robot Name: {name}")
+        print(f" Matches: {data['matches_played']} | Volleys: {data['volleys_fired']}")
+        print(f" Shots: {shots}, Hits: {hits} | Scouted: {scouted:.1f}")
+        print(f" Real Accuracy: {real_acc:.2f}% (Placed: {data['placed_accuracy']:.1f}%)")
+        print(f" Shot Error: {shot_error:.2f}% | Hit Error: {hit_error:.2f}%")
+        print("-" * 30)
 
 if __name__ == "__main__":
     main()
