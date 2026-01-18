@@ -51,31 +51,20 @@ def scout_robot_match(robot: RobotModel, metric: MagazineSizeMetric) -> dict:
 
         # print(f"Total shots: {current_fuel} ({points} hits, {misses} misses)")
 
-    print("\n")
-    print(f"=" * 20)
-    print(f"SUMMERY RESULTS:")
-    print(f"Robot: {robot.name}")
-    print(f"=" * 20)
-
-    print(f"\nNumber of volleys: {number_of_volleys}")
-
-    print(f"\nTotal shots: {total_shots}")
-    print(f"Total hits: {total_hits}")
-    print(f"Total scouted shots: {total_scouted_shots}")
-
-    print(f"\nStats:")
+    # same amount of deta as before just readable and understandable
+    print(f"- Robot: {robot.name} (Volleys: {number_of_volleys})")
+    print(f"Totals: Shots: {total_shots} | Hits: {total_hits} | Scouted: {total_scouted_shots:.1f}")
 
     if total_shots > 0:
         total_accuracy = 100 * (total_hits / total_shots)
     else:
         total_accuracy = 0
-    print(f"Total accuracy: {total_accuracy:.2f}%")
 
     total_shots_error = calculate_error(total_scouted_shots, total_shots)
-    print(f"Total shots error: {total_shots_error:.2f}%")
-
     total_hits_vs_shots_error = calculate_error(total_scouted_shots, total_hits)
-    print(f"Total hits error (scouted shots vs actual hits): {total_hits_vs_shots_error:.2f}%")
+
+    # same amount of deta as before just readable and understandable
+    print(f"Performance: Accuracy: {total_accuracy:.2f}% | Shot Error: {total_shots_error:.2f}% | Hit Error: {total_hits_vs_shots_error:.2f}%\n")
 
     # save the data for the current robot
     robot_stats = {
