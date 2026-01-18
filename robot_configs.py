@@ -108,10 +108,10 @@ robot15 = RobotModel(
 )
 
 robot16 = RobotModel(
-    name="End push fire",
+    name="ramping up using sine wave - Sobol's function",
     magazine_size=100,
     accuracy=0.9,
-    fire_rate_function=end_push_fire
+    fire_rate_function=sobols_function
 )
 
 robot17 = RobotModel(

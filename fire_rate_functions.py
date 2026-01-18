@@ -154,15 +154,9 @@ def spike_fire(t: float):  # steady with occasional spikes
         return 11.0
     return 5.8
 
-def end_push_fire(t: float):  # low early, aggressive late (endgame vibe)
-    t = t % 10
-    if t < 6.5:
-        return 4.5
-    if t < 7.0:
-        return 0.0
-    if t < 10.0:
-        return 6.0 + 2.0 * (t - 7.0) / 3.0
-    return 0.0
+def sobols_function(t: float):  # ramping up using sine wave - Sobol's function
+    t = t % 15
+    return 8.0 * math.sin((t / 10.0) * (math.pi / 2))
 
 def jammy_fire(t: float):  # mostly good, but frequent tiny jams
     t = t % 10
