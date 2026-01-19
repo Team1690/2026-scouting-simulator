@@ -25,6 +25,7 @@ class IterativeAverageFireRateMetric:
     def calculate_score_by_fire_rate(self, robots_stats, total_score, max_iterations):
         self.robot_scores = {}
         give_to_others = [0, 0, 0]
+        final_fire_rates = {}
 
         for _ in range(max_iterations):
             for i, robot in enumerate(robots_stats):
@@ -42,10 +43,17 @@ class IterativeAverageFireRateMetric:
                     give_to_others[(i + 2) % len(give_to_others)] = robot_score // 4
                     robot_avg_fire_rate = robot_score / robot_total_fire_time
 
-                self.robot_averages[robot_name][0] += 1
-                number_of_matches = self.robot_averages[robot_name][0]
-                self.robot_averages[robot_name][1] = (number_of_matches * self.robot_averages[robot_name][1] + robot_avg_fire_rate) / (number_of_matches + 1)
-                self.robot_scores[robot_name] = self.robot_averages[robot_name][1] * robot_total_fire_time
+                final_fire_rates[robot_name] = (robot_avg_fire_rate, robot_total_fire_time)
+
+        for robot_name in final_fire_rates:
+            robot_data = final_fire_rates[robot_name]
+            robot_avg_fire_rate = robot_data[0]
+            robot_total_fire_time = robot_data[1]
+
+            self.robot_averages[robot_name][0] = self.robot_averages[robot_name][0] + 1
+            number_of_matches = self.robot_averages[robot_name][0]
+            self.robot_averages[robot_name][1] = (number_of_matches * self.robot_averages[robot_name][1] + robot_avg_fire_rate) / (number_of_matches + 1)
+            self.robot_scores[robot_name] = self.robot_averages[robot_name][1] * robot_total_fire_time
 
         return self.robot_scores
 

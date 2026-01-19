@@ -13,7 +13,7 @@ robot1 = RobotModel(
 robot2 = RobotModel(
     name="Log",
     magazine_size=100,
-    max_fire_rate=2,
+    max_fire_rate=5,
     accuracy=0.9,
     fire_rate_function=lambda t: 2 * math.log(t + 1)
 )
@@ -37,7 +37,7 @@ robot4 = RobotModel(
 robot5 = RobotModel(
     name="Burst then jam",
     magazine_size=100,
-    max_fire_rate=8,
+    max_fire_rate=9,
     accuracy=0.9,
     fire_rate_function=burst_then_jam_fire
 )
@@ -53,7 +53,7 @@ robot6 = RobotModel(
 robot7 = RobotModel(
     name="Steady fire",
     magazine_size=100,
-    max_fire_rate=8,
+    max_fire_rate=6,
     accuracy=0.9,
     fire_rate_function=steady_fire
 )
@@ -85,7 +85,7 @@ robot10 = RobotModel(
 robot11 = RobotModel(
     name="Double pulse fire",
     magazine_size=100,
-    max_fire_rate=9,
+    max_fire_rate=8,
     accuracy=0.9,
     fire_rate_function=double_pulse_fire
 )
@@ -93,7 +93,7 @@ robot11 = RobotModel(
 robot12 = RobotModel(
     name="Exp decay fire",
     magazine_size=100,
-    max_fire_rate=10,
+    max_fire_rate=9,
     accuracy=0.9,
     fire_rate_function=exp_decay_fire
 )
@@ -101,7 +101,7 @@ robot12 = RobotModel(
 robot13 = RobotModel(
     name="Exp ramp fire",
     magazine_size=100,
-    max_fire_rate=10,
+    max_fire_rate=8,
     accuracy=0.9,
     fire_rate_function=exp_ramp_fire
 )
@@ -109,7 +109,7 @@ robot13 = RobotModel(
 robot14 = RobotModel(
     name="Log ramp fire",
     magazine_size=100,
-    max_fire_rate=10,
+    max_fire_rate=8,
     accuracy=0.9,
     fire_rate_function=log_ramp_fire
 )
@@ -117,7 +117,7 @@ robot14 = RobotModel(
 robot15 = RobotModel(
     name="Spike fire",
     magazine_size=100,
-    max_fire_rate=12,
+    max_fire_rate=11,
     accuracy=0.9,
     fire_rate_function=spike_fire
 )
@@ -125,7 +125,7 @@ robot15 = RobotModel(
 robot16 = RobotModel(
     name="ramping up using sine wave - Sobol's function",
     magazine_size=100,
-    max_fire_rate=10,
+    max_fire_rate=8,
     accuracy=0.9,
     fire_rate_function=sobols_function
 )
@@ -133,7 +133,7 @@ robot16 = RobotModel(
 robot17 = RobotModel(
     name="Jammy fire",
     magazine_size=100,
-    max_fire_rate=9,
+    max_fire_rate=8,
     accuracy=0.9,
     fire_rate_function=jammy_fire
 )
@@ -141,7 +141,7 @@ robot17 = RobotModel(
 robot18 = RobotModel(
     name="y=6",
     magazine_size=100,
-    max_fire_rate=8,
+    max_fire_rate=6,
     accuracy=0.9,
     fire_rate_function=lambda t: 6.0
 )
@@ -149,7 +149,7 @@ robot18 = RobotModel(
 robot19 = RobotModel(
     name="y=abs(2sin(t))",
     magazine_size=100,
-    max_fire_rate=3,
+    max_fire_rate=2,
     accuracy=0.9,
     fire_rate_function=lambda t: abs(2 * math.sin(t))
 )
@@ -157,7 +157,7 @@ robot19 = RobotModel(
 robot20 = RobotModel(
     name="y=abs(t)",
     magazine_size=100,
-    max_fire_rate=12,
+    max_fire_rate=10,
     accuracy=0.9,
     fire_rate_function=lambda t: abs(t)
 )
@@ -165,7 +165,7 @@ robot20 = RobotModel(
 robot21 = RobotModel(
     name="y=10",
     magazine_size=100,
-    max_fire_rate=12,
+    max_fire_rate=10,
     accuracy=0.9,
     fire_rate_function=lambda t: 10
 )
@@ -181,7 +181,7 @@ robot22 = RobotModel(
 robot23 = RobotModel(
     name="67",
     magazine_size=100,
-    max_fire_rate=8,
+    max_fire_rate=7,
     accuracy=0.9,
     fire_rate_function=six_seven
 )
