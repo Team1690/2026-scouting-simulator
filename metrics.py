@@ -43,16 +43,17 @@ class IterativeAverageFireRateMetric:
                     give_to_others[(i + 2) % len(give_to_others)] = robot_score // 4
                     robot_avg_fire_rate = robot_score / robot_total_fire_time
 
-                final_fire_rates[robot_name] = (robot_avg_fire_rate, robot_total_fire_time)
+                final_fire_rates[robot_name] = (robot_avg_fire_rate, robot_total_fire_time) # Store this robots final calculated fire rate and their total firing time
 
+        # update averages across matches
         for robot_name in final_fire_rates:
             robot_data = final_fire_rates[robot_name]
             robot_avg_fire_rate = robot_data[0]
             robot_total_fire_time = robot_data[1]
 
-            self.robot_averages[robot_name][0] = self.robot_averages[robot_name][0] + 1
-            number_of_matches = self.robot_averages[robot_name][0]
-            self.robot_averages[robot_name][1] = (number_of_matches * self.robot_averages[robot_name][1] + robot_avg_fire_rate) / (number_of_matches + 1)
+            self.robot_averages[robot_name][0] = self.robot_averages[robot_name][0] + 1 # track how many matches this robot has been in
+            number_of_matches = self.robot_averages[robot_name][0] # update number of matches
+            self.robot_averages[robot_name][1] = (number_of_matches * self.robot_averages[robot_name][1] + robot_avg_fire_rate) / (number_of_matches + 1) # calculate new average
             self.robot_scores[robot_name] = self.robot_averages[robot_name][1] * robot_total_fire_time
 
         return self.robot_scores
