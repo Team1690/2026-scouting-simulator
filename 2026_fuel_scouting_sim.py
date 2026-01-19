@@ -17,6 +17,7 @@ def main():
 
     scout = MagazineSizeMetric() # The scout creates the data
     fire_rate_metric = IterativeAverageFireRateMetric(all_robots)
+    opr = OPR(all_robots)
 
     notification_step = 1  # just to save console space where we can
     for i, match in enumerate(schedule): # enumerate takes a list and returns pairs of (index, value)
@@ -67,6 +68,9 @@ def main():
             current_match_data["blue_team_shots"] += stats["total_shots"]
 
         robot_scores = fire_rate_metric.calculate_score_by_fire_rate(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"], 10)
+
+        opr.add_match(match.red_alliance, current_match_data["red_team_hits"], match.blue_alliance, current_match_data["blue_team_hits"])
+        opr.calculate_opr()
 
         match_results.append(current_match_data)
 
@@ -171,6 +175,9 @@ def main():
         print(f" Robot avg fire rate: {robot_avg_fire_rate:.2f}")
         print(f" Shots: {shots}, Hits: {hits} | Scouted: {fire_rate_scouted:.2f}")
         print(f" Fire rate error: {fire_rate_error:.2f}%")
+        print(f" OPR: {opr.get_opr()[name]:.2f}")
+        print(f" Real avg hits per match: {hits / data['matches_played']:.2f}")
+        print(f" OPR error rate: {calculate_error(opr.get_opr()[name], hits / data['matches_played']):.2f}%")
         print("-" * 30)
 
 

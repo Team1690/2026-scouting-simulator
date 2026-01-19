@@ -1,3 +1,5 @@
+import numpy as np
+
 class MagazineSizeMetric:
     def __init__(self):
         self.buckets = [25, 50, 75, 100]
@@ -70,8 +72,11 @@ class OPR:
     def __init__(self, all_robots):
         self.teams = all_robots
         self.match_observations = [] # (list_of_teams, score)
+        self.opr_values = {}
 
-    # //todo: implement add_match
+    def add_match(self, red_teams, red_score, blue_teams, blue_score):
+        self.match_observations.append((red_teams, red_score))
+        self.match_observations.append((blue_teams, blue_score))
 
     def calculate_opr(self):
         sorted_teams = sorted(list(self.teams), key=lambda team: team.name)
@@ -89,7 +94,7 @@ class OPR:
         for i, (teams, score) in enumerate(self.match_observations): # take all the teams in the match and the score
             s[i] = score
             for team in teams:
-                if team in team_to_index:
+                if team in team_to_index.keys():
                     M[i][team_to_index[team]] = 1 # for each team in the same match set the matrix value to 1
 
         M_transpose = M.T # M transpose
@@ -101,8 +106,10 @@ class OPR:
         solution, residuals, rank, s_values = np.linalg.lstsq(A, B, rcond=None) # rcond=none means it automatically determines an appropriate cutoff value
         oprs = solution # just looks better
 
-        team_oprs = {} # tuple of (team, opr)
         for team, opr in zip(sorted_teams, oprs): # zip() pairs the first team with the first OPR and so on
-            team_oprs[team] = opr
+            self.opr_values[team.name] = opr
 
-        return team_oprs
+        return self.opr_values
+
+    def get_opr(self):
+        return self.opr_values
