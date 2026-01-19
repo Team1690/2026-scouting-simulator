@@ -38,10 +38,9 @@ class IterativeAverageFireRateMetric:
                 robot_avg_fire_rate = robot_score / robot_total_fire_time
 
                 if robot_avg_fire_rate > robot["max_fire_rate"]:
-                    robot_score = robot_score // 2
+                    robot_avg_fire_rate = (robot_score // 2) / robot_total_fire_time
                     give_to_others[(i + 1) % len(give_to_others)] = robot_score // 4
                     give_to_others[(i + 2) % len(give_to_others)] = robot_score // 4
-                    robot_avg_fire_rate = robot_score / robot_total_fire_time
 
                 final_fire_rates[robot_name] = (robot_avg_fire_rate, robot_total_fire_time) # Store this robots final calculated fire rate and their total firing time
 
@@ -72,7 +71,7 @@ class OPR:
     # //todo: implement add_match
 
     def calculate_opr(self):
-        sorted_teams = sorted(list(self.teams))
+        sorted_teams = sorted(list(self.teams), key=lambda team: team.name)
         n_teams = len(sorted_teams)
 
         # each team to a matrix index (0 to N-1)

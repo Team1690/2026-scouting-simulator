@@ -149,7 +149,7 @@ robot18 = RobotModel(
 robot19 = RobotModel(
     name="y=abs(2sin(t))",
     magazine_size=100,
-    max_fire_rate=2,
+    max_fire_rate=8,
     accuracy=0.9,
     fire_rate_function=lambda t: abs(2 * math.sin(t))
 )
@@ -189,7 +189,7 @@ robot23 = RobotModel(
 robot24 = RobotModel(
     name="t^2",
     magazine_size=100,
-    max_fire_rate=125,
+    max_fire_rate=110,
     accuracy=0.9,
     fire_rate_function=lambda t: t * t
 )
