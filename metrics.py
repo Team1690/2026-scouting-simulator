@@ -24,25 +24,27 @@ class IterativeAverageFireRateMetric:
 
     def calculate_score_by_fire_rate(self, robots_stats, total_score, max_iterations):
         self.robot_scores = {}
-        give_to_others = [0, 0, 0]
+        robot_match_score = [total_score / 3, total_score / 3, total_score / 3]
         final_fire_rates = {}
 
-        for _ in range(max_iterations):
+        for iteration in range(max_iterations):
+            rebalanced = False
             for i, robot in enumerate(robots_stats):
                 robot_name = robot["name"]
                 robot_total_fire_time = robot["total_fire_time"]
-
-                robot_score = total_score // 3 + give_to_others[i]
-                give_to_others[i] = 0
-
+                robot_score = robot_match_score[i]
                 robot_avg_fire_rate = robot_score / robot_total_fire_time
-
-                if robot_avg_fire_rate > robot["max_fire_rate"]:
-                    robot_avg_fire_rate = (robot_score // 2) / robot_total_fire_time
-                    give_to_others[(i + 1) % len(give_to_others)] = robot_score // 4
-                    give_to_others[(i + 2) % len(give_to_others)] = robot_score // 4
+                if robot_avg_fire_rate > robot["max_fire_rate"] and iteration < max_iterations - 1:
+                    robot_match_score[i] = robot_score / 2
+                    robot_avg_fire_rate = robot_match_score[i] / robot_total_fire_time
+                    robot_match_score[(i + 1) % len(robot_match_score)] += robot_score / 4
+                    robot_match_score[(i + 2) % len(robot_match_score)] += robot_score / 4
+                    rebalanced = True
 
                 final_fire_rates[robot_name] = (robot_avg_fire_rate, robot_total_fire_time) # Store this robots final calculated fire rate and their total firing time
+
+            if not rebalanced:
+                break
 
         # update averages across matches
         for robot_name in final_fire_rates:
@@ -50,10 +52,11 @@ class IterativeAverageFireRateMetric:
             robot_avg_fire_rate = robot_data[0]
             robot_total_fire_time = robot_data[1]
 
-            self.robot_averages[robot_name][0] = self.robot_averages[robot_name][0] + 1 # track how many matches this robot has been in
             number_of_matches = self.robot_averages[robot_name][0] # update number of matches
             self.robot_averages[robot_name][1] = (number_of_matches * self.robot_averages[robot_name][1] + robot_avg_fire_rate) / (number_of_matches + 1) # calculate new average
             self.robot_scores[robot_name] = self.robot_averages[robot_name][1] * robot_total_fire_time
+            # self.robot_scores[robot_name] = robot_avg_fire_rate * robot_total_fire_time
+            self.robot_averages[robot_name][0] += 1 # track how many matches this robot has been in
 
         return self.robot_scores
 
