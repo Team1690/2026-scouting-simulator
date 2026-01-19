@@ -54,3 +54,44 @@ class IterativeAverageFireRateMetric:
 
     def get_scores(self):
         return self.robot_scores
+
+class OPR:
+    def __init__(self, all_robots):
+        self.teams = all_robots
+        self.match_observations = [] # (list_of_teams, score)
+
+    # //todo: implement add_match
+
+    def calculate_opr(self):
+        sorted_teams = sorted(list(self.teams))
+        n_teams = len(sorted_teams)
+
+        # each team to a matrix index (0 to N-1)
+        team_to_index = {}
+        for i, team in enumerate(sorted_teams):
+            team_to_index[team] = i
+
+        n_matches = len(self.match_observations)
+        M = np.zeros((n_matches, n_teams)) # Normal Equation matrix (M)
+        s = np.zeros(n_matches) # Normal Equation vector (s)
+
+        for i, (teams, score) in enumerate(self.match_observations): # take all the teams in the match and the score
+            s[i] = score
+            for team in teams:
+                if team in team_to_index:
+                    M[i][team_to_index[team]] = 1 # for each team in the same match set the matrix value to 1
+
+        M_transpose = M.T # M transpose
+        A = M_transpose @ M # A = M^T * M | left side of the normal equation
+        B = M_transpose @ s # B = M^T * s | right side of the normal equation
+
+        # solve the linear system A * oprs = B using the least squares
+        # np.linalg.lstsq returns a tuple with 4 values: (solution, residuals, rank, singular_values)
+        solution, residuals, rank, s_values = np.linalg.lstsq(A, B, rcond=None) # rcond=none means it automatically determines an appropriate cutoff value
+        oprs = solution # just looks better
+
+        team_oprs = {} # tuple of (team, opr)
+        for team, opr in zip(sorted_teams, oprs): # zip() pairs the first team with the first OPR and so on
+            team_oprs[team] = opr
+
+        return team_oprs
