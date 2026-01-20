@@ -17,6 +17,7 @@ def main():
 
     scout = MagazineSizeMetric() # The scout creates the data
     fire_rate_metric = IterativeAverageFireRateMetric(all_robots)
+    fixed_window_metric = AvgRateFixedWindowMetric()
     opr = OPR(all_robots)
 
     notification_step = 1  # just to save console space where we can
@@ -45,6 +46,8 @@ def main():
             current_match_data["red_team_hits"] += stats["total_hits"]
             current_match_data["red_team_shots"] += stats["total_shots"]
 
+            stats["AvgRateFixedWindow"] = fixed_window_metric.calculate_AvgRateFixedWindow(robot.name, stats["total_hits"], stats["total_fire_time"])
+
         robot_scores = fire_rate_metric.calculate_score_by_fire_rate(current_match_data["red_team_robots"], current_match_data["red_team_hits"], 10)
 
         if (i + 1) % notification_step == 0:
@@ -58,6 +61,13 @@ def main():
             total_score = sum(robot_scores.values())
             print(f"\nTotal scouted hits based on fire rate: {total_score:.2f}")
 
+            print("\n")
+            total_fixed_window_scouted = 0
+            for robot in current_match_data["red_team_robots"]:
+                print(f"Window avg rate scouted hits: {robot['AvgRateFixedWindow']:.2f} for {robot['name']}")
+                total_fixed_window_scouted += robot['AvgRateFixedWindow']
+            print(f"\nTotal window avg rate scouted hits: {total_fixed_window_scouted:.2f}")
+
         # Blue Team
         if (i + 1) % notification_step == 0: # same as above
             print("\n[BLUE TEAM]")
@@ -66,6 +76,8 @@ def main():
             current_match_data["blue_team_robots"].append(stats)
             current_match_data["blue_team_hits"] += stats["total_hits"]
             current_match_data["blue_team_shots"] += stats["total_shots"]
+
+            stats["AvgRateFixedWindow"] = fixed_window_metric.calculate_AvgRateFixedWindow(robot.name, stats["total_hits"], stats["total_fire_time"])
 
         robot_scores = fire_rate_metric.calculate_score_by_fire_rate(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"], 10)
 
@@ -84,6 +96,13 @@ def main():
 
             total_score = sum(robot_scores.values())
             print(f"\nTotal scouted hits based on fire rate: {total_score:.2f}")
+
+            print("\n")
+            total_fixed_window_scouted = 0
+            for robot in current_match_data["blue_team_robots"]:
+                print(f"Window avg rate: {robot['AvgRateFixedWindow']:.2f} for {robot['name']}")
+                total_fixed_window_scouted += robot['AvgRateFixedWindow']
+            print(f"\nTotal window avg rate: {total_fixed_window_scouted:.2f}")
 
     print("\n")
     print(f"Schedule Score: {schedule_score}")
@@ -105,6 +124,7 @@ def main():
                     "volleys_fired": 0,
                     "placed_accuracy": robot_data["placed_accuracy"],
                     "total_fire_time": 0,
+                    "total_AvgRateFixedWindow": 0,
                 }
 
             # Add the data from this match to the total
@@ -114,6 +134,7 @@ def main():
             final_robot_stats[name]["matches_played"] += 1
             final_robot_stats[name]["volleys_fired"] += robot_data["volleys"]
             final_robot_stats[name]["total_fire_time"] += robot_data["total_fire_time"]
+            final_robot_stats[name]["total_AvgRateFixedWindow"] += robot_data["AvgRateFixedWindow"]
 
         # Do the blue team (same exact thing)
         for robot_data in match_info["blue_team_robots"]:
@@ -128,6 +149,7 @@ def main():
                     "volleys_fired": 0,
                     "placed_accuracy": robot_data["placed_accuracy"],
                     "total_fire_time": 0,
+                    "total_AvgRateFixedWindow": 0,
                 }
 
             final_robot_stats[name]["total_shots_fired"] += robot_data["total_shots"]
@@ -136,6 +158,7 @@ def main():
             final_robot_stats[name]["matches_played"] += 1
             final_robot_stats[name]["volleys_fired"] += robot_data["volleys"]
             final_robot_stats[name]["total_fire_time"] += robot_data["total_fire_time"]
+            final_robot_stats[name]["total_AvgRateFixedWindow"] += robot_data["AvgRateFixedWindow"]
 
     print("\n")
     print("=" * 40)
@@ -175,9 +198,15 @@ def main():
         print(f" Robot avg fire rate: {robot_avg_fire_rate:.2f}")
         print(f" Shots: {shots}, Hits: {hits} | Scouted: {fire_rate_scouted:.2f}")
         print(f" Fire rate error: {fire_rate_error:.2f}%")
+        print(f"\n")
         print(f" OPR: {opr.get_opr()[name]:.2f}")
         print(f" Real avg hits per match: {hits / data['matches_played']:.2f}")
         print(f" OPR error rate: {calculate_error(opr.get_opr()[name], hits / data['matches_played']):.2f}%")
+        print(f"\n")
+        print(f" Fixed window scouted hits: {data['total_AvgRateFixedWindow']:.2f}")
+        print(f" Fixed window error rate: {calculate_error(data['total_AvgRateFixedWindow'], hits):.2f}%")
+        print(f" Fixed window avg rate: {fixed_window_metric.get_rates()[name]:.2f}")
+
         print("-" * 30)
 
 

@@ -113,3 +113,22 @@ class OPR:
 
     def get_opr(self):
         return self.opr_values
+
+class AvgRateFixedWindowMetric:
+    def __init__(self):
+        self.robot_rates = {}
+
+    def calculate_AvgRateFixedWindow(self, robot_name, actual_hits, time_taken):
+        if robot_name in self.robot_rates: # if we already have a rate for this robot then use it for the time taken
+            saved_rate = self.robot_rates[robot_name]
+            fixed_window_scouted_hits = saved_rate * time_taken
+            return fixed_window_scouted_hits
+        else:
+            rate = actual_hits / time_taken
+
+            self.robot_rates[robot_name] = rate
+
+            return actual_hits
+
+    def get_rates(self):
+        return self.robot_rates
