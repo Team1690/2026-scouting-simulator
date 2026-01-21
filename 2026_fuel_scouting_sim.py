@@ -254,9 +254,9 @@ def main():
         print(f" Real avg hits per match: {hits / data['matches_played']:.2f}")
         print(f" OPR error rate: {calculate_error(opr.get_opr()[name], hits / data['matches_played']):.2f}%")
         print(f"\n")
-        print(f" Fixed window scouted hits: {data['total_AvgRateFixedWindow']:.2f}")
-        print(f" Fixed window error rate: {calculate_error(data['total_AvgRateFixedWindow'], hits):.2f}%")
-        print(f" Fixed window avg rate: {fixed_window_metric.get_rates()[name]:.2f}")
+        # print(f" Fixed window scouted hits: {data['total_AvgRateFixedWindow']:.2f}")
+        # print(f" Fixed window error rate: {calculate_error(data['total_AvgRateFixedWindow'], hits):.2f}%")
+        # print(f" Fixed window avg rate: {fixed_window_metric.get_rates()[name]:.2f}")
 
         print("-" * 30)
 
