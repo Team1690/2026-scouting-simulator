@@ -17,7 +17,8 @@ def main():
 
     scout = MagazineSizeMetric() # The scout creates the data
     fire_rate_metric = IterativeAverageFireRateMetric(all_robots)
-    fixed_window_metric = AvgRateFixedWindowMetric()
+    fixed_window_metric = MatchAvgRateFixedWindowMetric()
+    volley_avg_rate_fixed_window_metric = VolleyAvgRateFixedWindowMetric(all_robots)
     opr = OPR(all_robots)
 
     notification_step = 1  # just to save console space where we can
@@ -47,26 +48,50 @@ def main():
             current_match_data["red_team_shots"] += stats["total_shots"]
 
             stats["AvgRateFixedWindow"] = fixed_window_metric.calculate_AvgRateFixedWindow(robot.name, stats["total_hits"], stats["total_fire_time"])
+            volley_avg_rate_fixed_window_metric.calculate_volley_avg_rate_fixed_window(stats)
 
         robot_scores = fire_rate_metric.calculate_score_by_fire_rate(current_match_data["red_team_robots"], current_match_data["red_team_hits"], 10)
 
         if (i + 1) % notification_step == 0:
-            print(f"Total red team hits: {current_match_data['red_team_hits']}")
             print(f"Total red team shots: {current_match_data['red_team_shots']}")
+            print(f"Total red team hits: {current_match_data['red_team_hits']}")
             print("\n")
 
             for robot_name in robot_scores:
                 print(f"Scouted hits based on fire rate: {robot_scores[robot_name]:.2f} for {robot_name}")
+                for current_match_robot_data in current_match_data["red_team_robots"]:
+                    if current_match_robot_data["name"] == robot_name:
+                        print(f"Shots error rate based on fire rate: {calculate_error(robot_scores[robot_name], current_match_robot_data['total_shots']):.2f}%")
+                        print(f"Hits error rate based on fire rate: {calculate_error(robot_scores[robot_name], current_match_robot_data['total_hits']):.2f}%")
 
             total_score = sum(robot_scores.values())
             print(f"\nTotal scouted hits based on fire rate: {total_score:.2f}")
+            print(f"Shots error rate based on fire rate: {calculate_error(total_score, current_match_data['red_team_shots']):.2f}%")
+            print(f"Hits error rate based on fire rate: {calculate_error(total_score, current_match_data['red_team_hits']):.2f}%")
+
+            # print("\n")
+            # match_total_fixed_window_scouted = 0
+            # for robot in current_match_data["red_team_robots"]:
+            #     print(f"Window avg rate scouted hits: {robot['AvgRateFixedWindow']:.2f} for {robot['name']}")
+            #     match_total_fixed_window_scouted += robot['AvgRateFixedWindow']
+            # print(f"\nTotal window avg rate scouted hits: {match_total_fixed_window_scouted:.2f}")
 
             print("\n")
-            total_fixed_window_scouted = 0
+            match_total_volley_avg_window_scouted = 0
             for robot in current_match_data["red_team_robots"]:
-                print(f"Window avg rate scouted hits: {robot['AvgRateFixedWindow']:.2f} for {robot['name']}")
-                total_fixed_window_scouted += robot['AvgRateFixedWindow']
-            print(f"\nTotal window avg rate scouted hits: {total_fixed_window_scouted:.2f}")
+                print(f"{robot['name']} Volley avg rate scouted hits: {volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score']:.2f}")
+
+                shots_volley_error_rate = calculate_error(volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score'], robot['total_shots'])
+                hits_volley_error_rate = calculate_error(volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score'], robot['total_hits'])
+                print(f"{robot['name']} Shots volley error rate: {shots_volley_error_rate:.2f}%")
+                print(f"{robot['name']} Hits volley error rate: {hits_volley_error_rate:.2f}%")
+
+                match_total_volley_avg_window_scouted += volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score']
+            print(f"\nTotal volley avg rate scouted hits: {match_total_volley_avg_window_scouted:.2f}")
+            print(f"Total shots volley error rate: {calculate_error(match_total_volley_avg_window_scouted, current_match_data['red_team_shots']):.2f}%")
+            print(f"Total hits volley error rate: {calculate_error(match_total_volley_avg_window_scouted, current_match_data['red_team_hits']):.2f}%")
+
+
 
         # Blue Team
         if (i + 1) % notification_step == 0: # same as above
@@ -74,10 +99,11 @@ def main():
         for robot in match.blue_alliance:
             stats = scout_robot_match(robot, scout)
             current_match_data["blue_team_robots"].append(stats)
-            current_match_data["blue_team_hits"] += stats["total_hits"]
             current_match_data["blue_team_shots"] += stats["total_shots"]
+            current_match_data["blue_team_hits"] += stats["total_hits"]
 
             stats["AvgRateFixedWindow"] = fixed_window_metric.calculate_AvgRateFixedWindow(robot.name, stats["total_hits"], stats["total_fire_time"])
+            volley_avg_rate_fixed_window_metric.calculate_volley_avg_rate_fixed_window(stats)
 
         robot_scores = fire_rate_metric.calculate_score_by_fire_rate(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"], 10)
 
@@ -87,22 +113,47 @@ def main():
         match_results.append(current_match_data)
 
         if (i + 1) % notification_step == 0:
-            print(f"Total blue team hits: {current_match_data['blue_team_hits']}")
             print(f"Total blue team shots: {current_match_data['blue_team_shots']}")
+            print(f"Total blue team hits: {current_match_data['blue_team_hits']}")
             print("\n")
 
             for robot_name in robot_scores:
                 print(f"Scouted hits based on fire rate: {robot_scores[robot_name]:.2f} for {robot_name}")
+                for current_match_robot_data in current_match_data["blue_team_robots"]:
+                    if current_match_robot_data["name"] == robot_name:
+                        print(f"Shots error rate based on fire rate: {calculate_error(robot_scores[robot_name], current_match_robot_data['total_shots']):.2f}%")
+                        print(f"Hits error rate based on fire rate: {calculate_error(robot_scores[robot_name], current_match_robot_data['total_hits']):.2f}%")
 
             total_score = sum(robot_scores.values())
             print(f"\nTotal scouted hits based on fire rate: {total_score:.2f}")
+            print(f"Shots error rate based on fire rate: {calculate_error(total_score, current_match_data['blue_team_shots']):.2f}%")
+            print(f"Hits error rate based on fire rate: {calculate_error(total_score, current_match_data['blue_team_hits']):.2f}%")
+
+            # print("\n")
+            # match_total_fixed_window_scouted = 0
+            # for robot in current_match_data["blue_team_robots"]:
+            #     print(f"Window avg rate: {robot['AvgRateFixedWindow']:.2f} for {robot['name']}")
+            #     match_total_fixed_window_scouted += robot['AvgRateFixedWindow']
+            # print(f"\nTotal window avg rate: {match_total_fixed_window_scouted:.2f}")
 
             print("\n")
-            total_fixed_window_scouted = 0
+            match_total_volley_avg_window_scouted = 0
             for robot in current_match_data["blue_team_robots"]:
-                print(f"Window avg rate: {robot['AvgRateFixedWindow']:.2f} for {robot['name']}")
-                total_fixed_window_scouted += robot['AvgRateFixedWindow']
-            print(f"\nTotal window avg rate: {total_fixed_window_scouted:.2f}")
+                print(f"{robot['name']} Volley avg rate scouted hits: {(volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score']):.2f}")
+
+                shots_volley_error_rate = calculate_error(volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score'], robot['total_shots'])
+                print(f"{robot['name']} Shots Volley error rate: {shots_volley_error_rate:.2f}%")
+                hits_volley_error_rate = calculate_error(volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score'], robot['total_hits'])
+                print(f"{robot['name']} Hits Volley error rate: {hits_volley_error_rate:.2f}%")
+
+
+                match_total_volley_avg_window_scouted += volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score']
+            print(f"\nTotal volley avg rate scouted hits: {match_total_volley_avg_window_scouted:.2f}")
+            print(f"Total shots Volley error rate: {calculate_error(match_total_volley_avg_window_scouted, current_match_data['blue_team_shots']):.2f}%")
+            print(f"Total hits Volley error rate: {calculate_error(match_total_volley_avg_window_scouted, current_match_data['blue_team_hits']):.2f}%")
+
+            for robot in current_match_data["blue_team_robots"]:
+                volley_avg_rate_fixed_window_metric.reset_robot_volleys(robot['name'])
 
     print("\n")
     print(f"Schedule Score: {schedule_score}")

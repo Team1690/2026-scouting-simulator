@@ -176,7 +176,7 @@ class OPR:
     def get_opr(self):
         return self.opr_values
 
-class AvgRateFixedWindowMetric:
+class MatchAvgRateFixedWindowMetric:
     def __init__(self):
         self.robot_rates = {}
 
@@ -194,3 +194,25 @@ class AvgRateFixedWindowMetric:
 
     def get_rates(self):
         return self.robot_rates
+
+class VolleyAvgRateFixedWindowMetric:
+    def __init__(self, all_robots):
+        self.robot_volley_scores: dict[str, float] = {}
+
+        for robot in all_robots:
+            self.robot_volley_scores[robot.name] = {"first_volley_rate": 0, "volleys_score": 0}
+
+    def calculate_volley_avg_rate_fixed_window(self, stats: dict):
+        if self.robot_volley_scores[stats["name"]]["first_volley_rate"] == 0:
+            self.robot_volley_scores[stats["name"]]["first_volley_rate"] = (stats["stats_per_volley"][0]["points"] + stats["stats_per_volley"][0]["misses"]) / stats["stats_per_volley"][0]["time_to_empty"]
+
+        robot_volley_score = self.robot_volley_scores[stats["name"]]["first_volley_rate"] * stats["total_fire_time"]
+        self.robot_volley_scores[stats["name"]]["volleys_score"] = robot_volley_score
+        return robot_volley_score
+
+    def reset_robot_volleys(self, robot_name):
+        self.robot_volley_scores[robot_name]["first_volley_rate"] = 0
+        self.robot_volley_scores[robot_name]["volleys_score"] = 0
+
+    def get_volley_scores(self):
+        return self.robot_volley_scores

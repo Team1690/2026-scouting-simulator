@@ -9,6 +9,7 @@ def scout_robot_match(robot: RobotModel, metric: MagazineSizeMetric) -> dict:
     total_hits = 0
     total_scouted_shots = 0
     total_time_to_empty = 0
+    stats_per_volley = []
 
     number_of_volleys = random.randint(1, 6) # random number of vollies to simulate
     for i in range(number_of_volleys):
@@ -35,6 +36,12 @@ def scout_robot_match(robot: RobotModel, metric: MagazineSizeMetric) -> dict:
 
         obs_time, obs_bucket = metric.recorded_observation_by_scouter(time_to_empty, magazine_percentage)
         # print(f"Scout result: Bucket {obs_bucket}%, [Observer recorded time (perfect): {obs_time:.2f}s]")
+
+        stats_per_volley.append({
+            "points": points,
+            "misses": misses,
+            "time_to_empty": time_to_empty,
+        })
 
         # print("\nStats:")
 
@@ -82,6 +89,7 @@ def scout_robot_match(robot: RobotModel, metric: MagazineSizeMetric) -> dict:
         "total_scouted_shots": total_scouted_shots,
         "volleys": number_of_volleys,
         "total_fire_time": total_time_to_empty,
+        "stats_per_volley": stats_per_volley,
     }
 
     return robot_stats
