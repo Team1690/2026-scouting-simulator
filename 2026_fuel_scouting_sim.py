@@ -48,7 +48,7 @@ def main():
             current_match_data["red_team_shots"] += stats["total_shots"]
 
             stats["AvgRateFixedWindow"] = fixed_window_metric.calculate_AvgRateFixedWindow(robot.name, stats["total_hits"], stats["total_fire_time"])
-            volley_avg_rate_fixed_window_metric.calculate_volley_avg_rate_fixed_window(stats)
+            stats["VolleyAvgRate"] = volley_avg_rate_fixed_window_metric.calculate_volley_avg_rate_fixed_window(stats)
 
         robot_scores = fire_rate_metric.calculate_score_by_fire_rate(current_match_data["red_team_robots"], current_match_data["red_team_hits"], 10)
 
@@ -91,6 +91,8 @@ def main():
             print(f"Total shots volley error rate: {calculate_error(match_total_volley_avg_window_scouted, current_match_data['red_team_shots']):.2f}%")
             print(f"Total hits volley error rate: {calculate_error(match_total_volley_avg_window_scouted, current_match_data['red_team_hits']):.2f}%")
 
+            for robot in current_match_data["red_team_robots"]:
+                volley_avg_rate_fixed_window_metric.reset_robot_volleys(robot['name'])
 
 
         # Blue Team
@@ -103,7 +105,7 @@ def main():
             current_match_data["blue_team_hits"] += stats["total_hits"]
 
             stats["AvgRateFixedWindow"] = fixed_window_metric.calculate_AvgRateFixedWindow(robot.name, stats["total_hits"], stats["total_fire_time"])
-            volley_avg_rate_fixed_window_metric.calculate_volley_avg_rate_fixed_window(stats)
+            stats["VolleyAvgRate"] = volley_avg_rate_fixed_window_metric.calculate_volley_avg_rate_fixed_window(stats)
 
         robot_scores = fire_rate_metric.calculate_score_by_fire_rate(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"], 10)
 
@@ -176,6 +178,7 @@ def main():
                     "placed_accuracy": robot_data["placed_accuracy"],
                     "total_fire_time": 0,
                     "total_AvgRateFixedWindow": 0,
+                    "total_VolleyAvgRate": 0,
                 }
 
             # Add the data from this match to the total
@@ -186,6 +189,7 @@ def main():
             final_robot_stats[name]["volleys_fired"] += robot_data["volleys"]
             final_robot_stats[name]["total_fire_time"] += robot_data["total_fire_time"]
             final_robot_stats[name]["total_AvgRateFixedWindow"] += robot_data["AvgRateFixedWindow"]
+            final_robot_stats[name]["total_VolleyAvgRate"] += robot_data["VolleyAvgRate"]
 
         # Do the blue team (same exact thing)
         for robot_data in match_info["blue_team_robots"]:
@@ -201,6 +205,7 @@ def main():
                     "placed_accuracy": robot_data["placed_accuracy"],
                     "total_fire_time": 0,
                     "total_AvgRateFixedWindow": 0,
+                    "total_VolleyAvgRate": 0,
                 }
 
             final_robot_stats[name]["total_shots_fired"] += robot_data["total_shots"]
@@ -210,6 +215,7 @@ def main():
             final_robot_stats[name]["volleys_fired"] += robot_data["volleys"]
             final_robot_stats[name]["total_fire_time"] += robot_data["total_fire_time"]
             final_robot_stats[name]["total_AvgRateFixedWindow"] += robot_data["AvgRateFixedWindow"]
+            final_robot_stats[name]["total_VolleyAvgRate"] += robot_data["VolleyAvgRate"]
 
     print("\n")
     print("=" * 40)
@@ -250,6 +256,8 @@ def main():
         print(f" Shots: {shots}, Hits: {hits} | Scouted: {fire_rate_scouted:.2f}")
         print(f" Fire rate error: {fire_rate_error:.2f}%")
         print(f"\n")
+        print(f" Volley avg error rate: {calculate_error(data['total_VolleyAvgRate'], hits):.2f}%")
+        print("\n")
         print(f" OPR: {opr.get_opr()[name]:.2f}")
         print(f" Real avg hits per match: {hits / data['matches_played']:.2f}")
         print(f" OPR error rate: {calculate_error(opr.get_opr()[name], hits / data['matches_played']):.2f}%")
@@ -259,6 +267,7 @@ def main():
         # print(f" Fixed window avg rate: {fixed_window_metric.get_rates()[name]:.2f}")
 
         print("-" * 30)
+
 
 
 if __name__ == "__main__":
