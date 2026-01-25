@@ -8,6 +8,29 @@ from robot_configs import *
 from utils import *
 
 def main():
+    NUMBER_OF_RUNS = 25
+
+    total_avg_magazine_error = 0
+    total_avg_fire_rate_error = 0
+    total_avg_volley_error = 0
+    total_avg_opr_error = 0
+
+    for i in range(NUMBER_OF_RUNS):
+        avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error = run_simulation()
+
+        total_avg_magazine_error += avg_magazine_error
+        total_avg_fire_rate_error += avg_fire_rate_error
+        total_avg_volley_error += avg_volley_error
+        total_avg_opr_error += avg_opr_error
+
+    print(f"Total avg magazine error: {total_avg_magazine_error / NUMBER_OF_RUNS}")
+    print(f"Total avg fire rate error: {total_avg_fire_rate_error / NUMBER_OF_RUNS}")
+    print(f"Total avg volley error: {total_avg_volley_error / NUMBER_OF_RUNS}")
+    print(f"Total avg opr error: {total_avg_opr_error / NUMBER_OF_RUNS}")
+
+
+
+def run_simulation():
     MATCHES_PER_ROBOT = 10
     ITERATIONS = 10000
 
@@ -268,6 +291,61 @@ def main():
 
         print("-" * 30)
 
+    print("\n")
+    print("-" * 40)
+    print("TOTAL ERROR RATES ACROSS ALL MATCHES AND ROBOTS")
+    print("-" * 40)
+
+    total_magazine_error = 0
+    total_fire_rate_error = 0
+    total_volley_error = 0
+    total_opr_error = 0
+
+    robot_count = len(robot_names_list)
+
+    for robot_name in robot_names_list:
+        robot_stats = final_robot_stats[robot_name]
+
+        actual_hits = robot_stats["total_shots_hit"]
+        scouted_shots = robot_stats["total_shots_scouted"]
+
+        magazine_error = calculate_error(scouted_shots, actual_hits)
+        total_magazine_error += magazine_error
+
+        robot_avg_fire_rate = fire_rate_metric.get_averages()[robot_name][1]
+        fire_rate_scouted_hits = robot_avg_fire_rate * robot_stats['total_fire_time']
+
+        fire_rate_error = calculate_error(fire_rate_scouted_hits, actual_hits)
+        total_fire_rate_error += fire_rate_error
+
+        volley_avg_rate_total = robot_stats['total_VolleyAvgRate']
+
+        volley_error = calculate_error(volley_avg_rate_total, actual_hits)
+        total_volley_error += volley_error
+
+        opr_value = opr.get_opr()[robot_name]
+
+        matches_played = robot_stats['matches_played']
+        real_hits_per_match = actual_hits / matches_played
+
+        opr_error = calculate_error(opr_value, real_hits_per_match)
+        total_opr_error += opr_error
+
+    avg_magazine_error = total_magazine_error / robot_count
+    print(f"Average Magazine Error: {avg_magazine_error:.2f}%")
+
+    avg_fire_rate_error = total_fire_rate_error / robot_count
+    print(f"Average Fire Rate Error: {avg_fire_rate_error:.2f}%")
+
+    avg_volley_error = total_volley_error / robot_count
+    print(f"Average Volley Avg Error: {avg_volley_error:.2f}%")
+
+    avg_opr_error = total_opr_error / robot_count
+    print(f"Average OPR Error: {avg_opr_error:.2f}%")
+
+    print("\n") # like alw terminal next to a line is annoying me
+
+    return avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error
 
 
 if __name__ == "__main__":
