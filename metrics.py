@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from robot_model import RobotModel
 
 class MagazineSizeMetric:
     def __init__(self):
@@ -155,6 +156,87 @@ class VolleyAvgRateFixedWindowMetric:
 
     def get_volley_scores(self):
         return self.robot_volley_scores
+
+class WeightBasedMaxFireRateMetric:
+    def __init__(self, all_robots):
+        self.final_scores = {}
+        for robot in all_robots:
+            self.final_scores[robot.name] = 0.0
+
+    def calculate_weight_based_max_fire_rate(self, robot_stats: dict, total_score: int):
+        scouted_shots = {}
+        capacities = {}
+        uncapped = []
+        final_scores = {}
+
+        for robot_stats in robot_stats:
+            scouted_shots[robot_stats["name"]] = robot_stats["total_scouted_shots"]
+            capacities[robot_stats["name"]] = robot_stats["max_fire_rate"] * robot_stats["total_fire_time"]
+            final_scores[robot_stats["name"]] = 0.0
+            uncapped.append(robot_stats["name"])
+
+        remaining_score = total_score
+
+        while uncapped:
+            current_total_shots = sum(scouted_shots[robot_name] for robot_name in uncapped)
+            above_cap = []
+
+            for robot_name in uncapped:
+                if current_total_shots > 0:
+                    share = remaining_score * scouted_shots[robot_name] / current_total_shots
+
+                    if share > capacities[robot_name]:
+                        above_cap.append(robot_name)
+
+            if not above_cap:
+               for robot_name in uncapped:
+                   final_scores[robot_name] += remaining_score * scouted_shots[robot_name] / current_total_shots
+               break
+            else:
+                for robot_name in above_cap:
+                    final_scores[robot_name] = capacities[robot_name]
+                    remaining_score -= capacities[robot_name]
+                    uncapped.remove(robot_name)
+
+        for robot_name, final_score in final_scores.items():
+            self.final_scores[robot_name] += final_score
+
+    def get_final_scores(self):
+        return self.final_scores
+
+
+class WeightBasedMetric:
+    def __init__(self, all_robots):
+        self.final_scores = {}
+        for robot in all_robots:
+            self.final_scores[robot.name] = 0.0
+
+    def calculate_weight_based_metric(self, robot_stats: dict, total_score: int):
+        scouted_shots = {}
+        capacities = {}
+        uncapped = []
+        final_scores = {}
+
+        for robot_stats in robot_stats:
+            scouted_shots[robot_stats["name"]] = robot_stats["total_scouted_shots"]
+            capacities[robot_stats["name"]] = robot_stats["max_fire_rate"] * robot_stats["total_fire_time"]
+            final_scores[robot_stats["name"]] = 0.0
+            uncapped.append(robot_stats["name"])
+
+        remaining_score = total_score
+
+        current_total_shots = sum(scouted_shots[robot_name] for robot_name in uncapped)
+
+        for robot_name in uncapped:
+            final_scores[robot_name] += remaining_score * scouted_shots[robot_name] / current_total_shots
+
+        for robot_name, final_score in final_scores.items():
+            self.final_scores[robot_name] += final_score
+
+    def get_final_scores(self):
+        return self.final_scores
+
+
 
 # this class is practically done but didn't implement it anywhere also this was written really badly (just refactor it before using it)
 
