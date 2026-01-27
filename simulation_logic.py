@@ -3,8 +3,9 @@ import random
 from utils import calculate_error
 from robot_model import RobotModel
 from metrics import MagazineSizeMetric
+from scouter_model import ScouterModel
 
-def scout_robot_match(robot: RobotModel, metric: MagazineSizeMetric) -> dict:
+def scout_robot_match(robot: RobotModel, metric: ScouterModel) -> dict:
     total_shots = 0
     total_hits = 0
     total_scouted_shots = 0
@@ -34,7 +35,8 @@ def scout_robot_match(robot: RobotModel, metric: MagazineSizeMetric) -> dict:
         total_time_to_empty += time_to_empty
         # print(f"Time to deplete: {time_to_empty:.2f}s")
 
-        obs_time, obs_bucket = metric.recorded_observation_by_scouter(time_to_empty, magazine_percentage)
+        obs_time = metric.observe_time(time_to_empty)
+        obs_bucket = metric.observe_magazine_level(magazine_percentage)
         # print(f"Scout result: Bucket {obs_bucket}%, [Observer recorded time (perfect): {obs_time:.2f}s]")
 
         stats_per_volley.append({

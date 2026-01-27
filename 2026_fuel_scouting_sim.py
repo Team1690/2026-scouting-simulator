@@ -1,3 +1,4 @@
+from scouter_model import ScouterModel
 from __future__ import annotations
 from match_maker import make_matches
 import random
@@ -6,6 +7,7 @@ from metrics import *
 from simulation_logic import *
 from robot_configs import *
 from utils import *
+from scouter_model import *
 
 def main():
     NUMBER_OF_RUNS = 25
@@ -47,7 +49,7 @@ def run_simulation():
 
     match_results = []
 
-    scout = MagazineSizeMetric() # The scout creates the data
+    scout = ScouterModel(0.5, 0.1)
     fire_rate_metric = IterativeAverageFireRateMetric(all_robots)
     fixed_window_metric = MatchAvgRateFixedWindowMetric()
     volley_avg_rate_fixed_window_metric = VolleyAvgRateFixedWindowMetric(all_robots)
