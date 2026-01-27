@@ -1,5 +1,5 @@
-from scouter_model import ScouterModel
 from __future__ import annotations
+from scouter_model import ScouterModel
 from match_maker import make_matches
 import random
 from robot_model import *
@@ -49,7 +49,7 @@ def run_simulation():
 
     match_results = []
 
-    scout = ScouterModel(0.5, 0.1)
+    scout = ScouterModel(-1.0, 1.0, 0.1)
     fire_rate_metric = IterativeAverageFireRateMetric(all_robots)
     fixed_window_metric = MatchAvgRateFixedWindowMetric()
     volley_avg_rate_fixed_window_metric = VolleyAvgRateFixedWindowMetric(all_robots)
