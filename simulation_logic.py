@@ -2,8 +2,8 @@ from __future__ import annotations
 import random
 from utils import calculate_error
 from robot_model import RobotModel
-from metrics import MagazineSizeMetric
 from scouter_model import ScouterModel
+# from metrics import MagazineSizeMetric
 
 def scout_robot_match(robot: RobotModel, metric: ScouterModel) -> dict:
     total_shots = 0
