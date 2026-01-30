@@ -251,14 +251,24 @@ class WeightBasedFirstVolleyMetric:
         for robot in all_robots:
             self.final_scores[robot.name] = 0.0
 
-    def calculate_weight_based_first_volley_metric(self, robot_stats: dict, total_score: int):
+    def calculate_weight_based_first_volley_metric(self, robot_stats_list: list, total_score: int):
         scouted_shots = {}
         capacities = {}
         uncapped = []
         final_scores = {}
 
-        for robot_stats in robot_stats:
-            scouted_shots[robot_stats["name"]] = robot_stats["VolleyAvgRate"]
+        for robot_stats in robot_stats_list:
+            # Calculate BPS from the first volley
+            first_volley = robot_stats["stats_per_volley"][0]
+            if first_volley["time_to_empty"] > 0:
+                bps = (first_volley["points"] + first_volley["misses"]) / first_volley["time_to_empty"]
+            else:
+                bps = 0
+
+            # Project shots for the whole match based on this BPS
+            projected_shots = bps * robot_stats["total_fire_time"]
+
+            scouted_shots[robot_stats["name"]] = projected_shots
             capacities[robot_stats["name"]] = robot_stats["max_fire_rate"] * robot_stats["total_fire_time"]
             final_scores[robot_stats["name"]] = 0.0
             uncapped.append(robot_stats["name"])

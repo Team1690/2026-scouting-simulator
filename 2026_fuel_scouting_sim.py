@@ -6,11 +6,13 @@ from robot_model import *
 from metrics import *
 from simulation_logic import *
 from robot_configs import *
+from robot_configs import get_all_robots as get_normal_robots
+from robot_configs_magazine_size import get_all_robots as get_magazine_robots
 from utils import *
 from scouter_model import *
 
-def main():
-    NUMBER_OF_RUNS = 10
+def run_full_simulation_suite(robot_getter, suite_label):
+    NUMBER_OF_RUNS = 1
 
     total_avg_magazine_error = 0
     total_avg_fire_rate_error = 0
@@ -22,9 +24,11 @@ def main():
     total_avg_magazine_shots_error = 0
     total_avg_volley_shots_error = 0
 
+    all_robots = robot_getter()
+
     for i in range(NUMBER_OF_RUNS):
         print(f"\n\nRUN {i + 1} / {NUMBER_OF_RUNS} \n\n")
-        avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error, avg_weight_based_max_fire_rate_error, avg_weight_based_error, avg_weight_based_first_volley_error, avg_magazine_shots_error, avg_volley_shots_error = run_simulation()
+        avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error, avg_weight_based_max_fire_rate_error, avg_weight_based_error, avg_weight_based_first_volley_error, avg_magazine_shots_error, avg_volley_shots_error = run_simulation(all_robots)
 
         total_avg_magazine_error += avg_magazine_error
         total_avg_fire_rate_error += avg_fire_rate_error
@@ -36,6 +40,7 @@ def main():
         total_avg_magazine_shots_error += avg_magazine_shots_error
         total_avg_volley_shots_error += avg_volley_shots_error
 
+    print(f"\n\n{'='*20} {suite_label} RESULTS {'='*20}\n\n")
     print(f"Total avg magazine error: {total_avg_magazine_error / NUMBER_OF_RUNS}")
     print(f"Total avg fire rate error: {total_avg_fire_rate_error / NUMBER_OF_RUNS}")
     print(f"Total avg volley error: {total_avg_volley_error / NUMBER_OF_RUNS}")
@@ -49,17 +54,15 @@ def main():
     print(f"Total avg weight based (first volley) error: {total_avg_weight_based_first_volley_error / NUMBER_OF_RUNS}")
 
 
-def run_simulation():
+def run_simulation(all_robots):
     MATCHES_PER_ROBOT = 10
-    ITERATIONS = 5000
-
-    all_robots = get_all_robots()
+    ITERATIONS = 10000
 
     schedule, schedule_score = make_matches(all_robots, MATCHES_PER_ROBOT, ITERATIONS)
 
     match_results = []
 
-    scout = ScouterModel(-1.0, 1.0, 0.1)
+    scout = ScouterModel(-0.25, 0.25, 0.1) # min_time_error, max_time_error, magazine_error
     fire_rate_metric = IterativeAverageFireRateMetric(all_robots)
     fixed_window_metric = MatchAvgRateFixedWindowMetric()
     volley_avg_rate_fixed_window_metric = VolleyAvgRateFixedWindowMetric(all_robots)
@@ -417,6 +420,10 @@ def run_simulation():
 
     return avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error, avg_weight_based_max_fire_rate_error, avg_weight_based_error, avg_weight_based_first_volley_error, avg_magazine_shots_error, avg_volley_shots_error
 
+
+def main():
+    run_full_simulation_suite(get_normal_robots, "NORMAL ROBOT CONFIGS")
+    run_full_simulation_suite(get_magazine_robots, "MAGAZINE SIZE ROBOT CONFIGS")
 
 if __name__ == "__main__":
     main()

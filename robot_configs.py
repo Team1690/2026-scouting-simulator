@@ -4,10 +4,10 @@ from fire_rate_functions import *
 import random
 
 def get_accuracy():
-    return random.uniform(0.4, 0.9)
+    return random.uniform(0.5, 1.0)
 
 def get_magazine_size():
-    return random.randint(20, 70)
+    return random.randint(20, 60)
 
 def get_all_robots():
 

@@ -46,6 +46,10 @@ class RobotModelMagazineSizeFireRate:
         self.max_fire_rate = max_fire_rate
         self.accuracy = accuracy
         self.magazine_size_fire_rate_function = magazine_size_fire_rate_function
+        self.fire_rate_function = magazine_size_fire_rate_function # alias for compatibility checks that might look for this
+
+    def time_to_deplete(self, dt: float, magazine_percentage: float):
+        return self.time_to_deplete_based_on_magazine_percentage(dt, magazine_percentage)
 
     def get_points_for_magazine(self, magazine_percentage: float):
         hits = 0
