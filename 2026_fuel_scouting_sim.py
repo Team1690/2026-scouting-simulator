@@ -321,10 +321,10 @@ def run_simulation():
 
         # print("-" * 30)
 
-    print("\n")
-    print("-" * 40)
-    print("TOTAL ERROR RATES ACROSS ALL MATCHES AND ROBOTS")
-    print("-" * 40)
+    # print("\n")
+    # print("-" * 40)
+    # print("TOTAL ERROR RATES ACROSS ALL MATCHES AND ROBOTS")
+    # print("-" * 40)
 
     total_magazine_error = 0
     total_fire_rate_error = 0
