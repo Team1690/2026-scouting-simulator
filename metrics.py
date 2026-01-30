@@ -37,7 +37,10 @@ class IterativeAverageFireRateMetric:
                 robot_name = robot["name"]
                 robot_total_fire_time = robot["total_fire_time"]
                 robot_score = robot_match_score[i]
-                robot_avg_fire_rate = robot_score / robot_total_fire_time
+                if robot_total_fire_time > 0:
+                    robot_avg_fire_rate = robot_score / robot_total_fire_time
+                else:
+                    robot_avg_fire_rate = 0
                 if robot_avg_fire_rate > robot["max_fire_rate"] and iteration < max_iterations - 1:
                     robot_match_score[i] = robot_score / 2
                     robot_avg_fire_rate = robot_match_score[i] / robot_total_fire_time
@@ -125,12 +128,14 @@ class MatchAvgRateFixedWindowMetric:
             saved_rate = self.robot_rates[robot_name]
             fixed_window_scouted_hits = saved_rate * time_taken
             return fixed_window_scouted_hits
-        else:
+        elif time_taken > 0:
             rate = actual_hits / time_taken
 
             self.robot_rates[robot_name] = rate
 
             return actual_hits
+        else:
+            return 0
 
     def get_rates(self):
         return self.robot_rates
@@ -143,7 +148,7 @@ class VolleyAvgRateFixedWindowMetric:
             self.robot_volley_scores[robot.name] = {"first_volley_rate": 0, "volleys_score": 0}
 
     def calculate_volley_avg_rate_fixed_window(self, stats: dict):
-        if self.robot_volley_scores[stats["name"]]["first_volley_rate"] == 0:
+        if self.robot_volley_scores[stats["name"]]["first_volley_rate"] == 0 and stats["stats_per_volley"]:
             self.robot_volley_scores[stats["name"]]["first_volley_rate"] = (stats["stats_per_volley"][0]["points"] + stats["stats_per_volley"][0]["misses"]) / stats["stats_per_volley"][0]["time_to_empty"]
 
         robot_volley_score = self.robot_volley_scores[stats["name"]]["first_volley_rate"] * stats["total_fire_time"]
@@ -190,7 +195,10 @@ class WeightBasedMaxFireRateMetric:
 
             if not above_cap:
                for robot_name in uncapped:
-                   final_scores[robot_name] += remaining_score * scouted_shots[robot_name] / current_total_shots
+                   if current_total_shots > 0:
+                       final_scores[robot_name] += remaining_score * scouted_shots[robot_name] / current_total_shots
+                   else:
+                       final_scores[robot_name] = 0
                break
             else:
                 for robot_name in above_cap:

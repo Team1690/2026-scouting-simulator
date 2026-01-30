@@ -10,7 +10,7 @@ from utils import *
 from scouter_model import *
 
 def main():
-    NUMBER_OF_RUNS = 25
+    NUMBER_OF_RUNS = 10
 
     total_avg_magazine_error = 0
     total_avg_fire_rate_error = 0
@@ -51,7 +51,7 @@ def main():
 
 def run_simulation():
     MATCHES_PER_ROBOT = 10
-    ITERATIONS = 10000
+    ITERATIONS = 5000
 
     all_robots = get_all_robots()
 
