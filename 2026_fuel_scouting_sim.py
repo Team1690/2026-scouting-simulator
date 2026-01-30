@@ -40,18 +40,15 @@ def run_full_simulation_suite(robot_getter, suite_label):
         total_avg_magazine_shots_error += avg_magazine_shots_error
         total_avg_volley_shots_error += avg_volley_shots_error
 
-    print(f"\n\n{'='*20} {suite_label} RESULTS {'='*20}\n\n")
-    print(f"Total avg magazine error: {total_avg_magazine_error / NUMBER_OF_RUNS}")
-    print(f"Total avg fire rate error: {total_avg_fire_rate_error / NUMBER_OF_RUNS}")
-    print(f"Total avg volley error: {total_avg_volley_error / NUMBER_OF_RUNS}")
-    print(f"Total avg opr error: {total_avg_opr_error / NUMBER_OF_RUNS}")
-    print("-" * 40)
-    print(f"Total avg magazine shots error: {total_avg_magazine_shots_error / NUMBER_OF_RUNS}")
-    print(f"Total avg volley shots error: {total_avg_volley_shots_error / NUMBER_OF_RUNS}")
-    print("-" * 40)
-    print(f"Total avg weight based max fire rate error: {total_avg_weight_based_max_fire_rate_error / NUMBER_OF_RUNS}")
-    print(f"Total avg weight based error: {total_avg_weight_based_error / NUMBER_OF_RUNS}")
-    print(f"Total avg weight based (first volley) error: {total_avg_weight_based_first_volley_error / NUMBER_OF_RUNS}")
+    return (total_avg_magazine_error / NUMBER_OF_RUNS,
+            total_avg_fire_rate_error / NUMBER_OF_RUNS,
+            total_avg_volley_error / NUMBER_OF_RUNS,
+            total_avg_opr_error / NUMBER_OF_RUNS,
+            total_avg_weight_based_max_fire_rate_error / NUMBER_OF_RUNS,
+            total_avg_weight_based_error / NUMBER_OF_RUNS,
+            total_avg_weight_based_first_volley_error / NUMBER_OF_RUNS,
+            total_avg_magazine_shots_error / NUMBER_OF_RUNS,
+            total_avg_volley_shots_error / NUMBER_OF_RUNS)
 
 
 def run_simulation(all_robots):
@@ -421,9 +418,32 @@ def run_simulation(all_robots):
     return avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error, avg_weight_based_max_fire_rate_error, avg_weight_based_error, avg_weight_based_first_volley_error, avg_magazine_shots_error, avg_volley_shots_error
 
 
+def print_suite_results(stats, suite_label):
+    (avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error,
+     avg_weight_based_max_fire_rate_error, avg_weight_based_error,
+     avg_weight_based_first_volley_error, avg_magazine_shots_error,
+     avg_volley_shots_error) = stats
+
+    print(f"\n\n{'='*20} {suite_label} RESULTS {'='*20}\n\n")
+    print(f"Total avg magazine error: {avg_magazine_error}")
+    print(f"Total avg fire rate error: {avg_fire_rate_error}")
+    print(f"Total avg volley error: {avg_volley_error}")
+    print(f"Total avg opr error: {avg_opr_error}")
+    print("-" * 40)
+    print(f"Total avg magazine shots error: {avg_magazine_shots_error}")
+    print(f"Total avg volley shots error: {avg_volley_shots_error}")
+    print("-" * 40)
+    print(f"Total avg weight based max fire rate error: {avg_weight_based_max_fire_rate_error}")
+    print(f"Total avg weight based error: {avg_weight_based_error}")
+    print(f"Total avg weight based (first volley) error: {avg_weight_based_first_volley_error}")
+
+
 def main():
-    run_full_simulation_suite(get_normal_robots, "NORMAL ROBOT CONFIGS")
-    run_full_simulation_suite(get_magazine_robots, "MAGAZINE SIZE ROBOT CONFIGS")
+    normal_stats = run_full_simulation_suite(get_normal_robots, "NORMAL ROBOT CONFIGS")
+    magazine_stats = run_full_simulation_suite(get_magazine_robots, "MAGAZINE SIZE ROBOT CONFIGS")
+
+    print_suite_results(normal_stats, "NORMAL ROBOT CONFIGS")
+    print_suite_results(magazine_stats, "MAGAZINE SIZE ROBOT CONFIGS")
 
 if __name__ == "__main__":
     main()
