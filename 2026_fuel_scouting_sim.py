@@ -440,10 +440,10 @@ def print_suite_results(stats, suite_label):
 
 def main():
     time_based_stats = run_full_simulation_suite(get_time_based_robots, "TIME BASED ROBOT CONFIGS")
-    magazine_stats = run_full_simulation_suite(get_magazine_robots, "MAGAZINE SIZE ROBOT CONFIGS")
+    magazine_stats = run_full_simulation_suite(get_magazine_robots, "MAGAZINE SIZE BASED ROBOT CONFIGS")
 
     print_suite_results(time_based_stats, "TIME BASED ROBOT CONFIGS")
-    print_suite_results(magazine_stats, "MAGAZINE SIZE ROBOT CONFIGS")
+    print_suite_results(magazine_stats, "MAGAZINE SIZE BASED ROBOT CONFIGS")
 
 if __name__ == "__main__":
     main()
