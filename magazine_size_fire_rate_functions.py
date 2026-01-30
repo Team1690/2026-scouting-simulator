@@ -1,6 +1,6 @@
 import math
 
-def charge_discharge_magazine_size_fire_rate(magazine_percentage: float, a: float, m: float):
+def charge_discharge_magazine_size_fire_rate(a: float, m: float, magazine_percentage: float):
     if m < 0.1:
         m = 0.1
 
@@ -15,7 +15,7 @@ def charge_discharge_magazine_size_fire_rate(magazine_percentage: float, a: floa
         fx = (a+1) * (1 - math.exp(m * (magazine_percentage - 100)))
     return fx
 
-def discharge_magazine_size_fire_rate(magazine_percentage: float, a: float, m: float):
+def discharge_magazine_size_fire_rate(a: float, m: float, magazine_percentage: float):
     if m < 0.1:
         m = 0.1
 
@@ -26,7 +26,7 @@ def discharge_magazine_size_fire_rate(magazine_percentage: float, a: float, m: f
 
     return fx
 
-def cooldown_magazine_size_fire_rate(magazine_percentage: float, a: float):
+def cooldown_magazine_size_fire_rate(a: float, magazine_percentage: float):
     fx = 0
 
     if 0 <= magazine_percentage <= a:

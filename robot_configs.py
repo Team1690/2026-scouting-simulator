@@ -16,7 +16,7 @@ def get_all_robots():
         magazine_size=get_magazine_size(),
         max_fire_rate=2,
         accuracy=get_accuracy(),
-        fire_rate_function=lambda t: quick_fire(t)
+        fire_rate_function=lambda t: quick_fire(t),
     )
 
     robot2 = RobotModel(
