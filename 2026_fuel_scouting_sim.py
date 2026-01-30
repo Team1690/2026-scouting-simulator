@@ -6,7 +6,7 @@ from robot_model import *
 from metrics import *
 from simulation_logic import *
 from robot_configs import *
-from robot_configs import get_all_robots as get_normal_robots
+from robot_configs import get_time_based_robots
 from robot_configs_magazine_size import get_all_robots as get_magazine_robots
 from utils import *
 from scouter_model import *
@@ -439,10 +439,10 @@ def print_suite_results(stats, suite_label):
 
 
 def main():
-    normal_stats = run_full_simulation_suite(get_normal_robots, "NORMAL ROBOT CONFIGS")
+    time_based_stats = run_full_simulation_suite(get_time_based_robots, "TIME BASED ROBOT CONFIGS")
     magazine_stats = run_full_simulation_suite(get_magazine_robots, "MAGAZINE SIZE ROBOT CONFIGS")
 
-    print_suite_results(normal_stats, "NORMAL ROBOT CONFIGS")
+    print_suite_results(time_based_stats, "TIME BASED ROBOT CONFIGS")
     print_suite_results(magazine_stats, "MAGAZINE SIZE ROBOT CONFIGS")
 
 if __name__ == "__main__":

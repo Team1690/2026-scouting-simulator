@@ -9,7 +9,7 @@ def get_accuracy():
 def get_magazine_size():
     return random.randint(20, 60)
 
-def get_all_robots():
+def get_time_based_robots():
 
     robot1 = RobotModel(
         name="Quick fire",
