@@ -205,6 +205,7 @@ class WeightBasedMaxFireRateMetric:
         return self.final_scores
 
 
+
 class WeightBasedMetric:
     def __init__(self, all_robots):
         self.final_scores = {}
@@ -219,6 +220,37 @@ class WeightBasedMetric:
 
         for robot_stats in robot_stats:
             scouted_shots[robot_stats["name"]] = robot_stats["total_scouted_shots"]
+            capacities[robot_stats["name"]] = robot_stats["max_fire_rate"] * robot_stats["total_fire_time"]
+            final_scores[robot_stats["name"]] = 0.0
+            uncapped.append(robot_stats["name"])
+
+        remaining_score = total_score
+
+        current_total_shots = sum(scouted_shots[robot_name] for robot_name in uncapped)
+
+        for robot_name in uncapped:
+            final_scores[robot_name] += remaining_score * scouted_shots[robot_name] / current_total_shots
+
+        for robot_name, final_score in final_scores.items():
+            self.final_scores[robot_name] += final_score
+
+    def get_final_scores(self):
+        return self.final_scores
+
+class WeightBasedFirstVolleyMetric:
+    def __init__(self, all_robots):
+        self.final_scores = {}
+        for robot in all_robots:
+            self.final_scores[robot.name] = 0.0
+
+    def calculate_weight_based_first_volley_metric(self, robot_stats: dict, total_score: int):
+        scouted_shots = {}
+        capacities = {}
+        uncapped = []
+        final_scores = {}
+
+        for robot_stats in robot_stats:
+            scouted_shots[robot_stats["name"]] = robot_stats["VolleyAvgRate"]
             capacities[robot_stats["name"]] = robot_stats["max_fire_rate"] * robot_stats["total_fire_time"]
             final_scores[robot_stats["name"]] = 0.0
             uncapped.append(robot_stats["name"])

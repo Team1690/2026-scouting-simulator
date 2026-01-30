@@ -18,10 +18,13 @@ def main():
     total_avg_opr_error = 0
     total_avg_weight_based_max_fire_rate_error = 0
     total_avg_weight_based_error = 0
+    total_avg_weight_based_first_volley_error = 0
+    total_avg_magazine_shots_error = 0
+    total_avg_volley_shots_error = 0
 
     for i in range(NUMBER_OF_RUNS):
         print(f"\n\nRUN {i + 1} / {NUMBER_OF_RUNS} \n\n")
-        avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error, avg_weight_based_max_fire_rate_error, avg_weight_based_error = run_simulation()
+        avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error, avg_weight_based_max_fire_rate_error, avg_weight_based_error, avg_weight_based_first_volley_error, avg_magazine_shots_error, avg_volley_shots_error = run_simulation()
 
         total_avg_magazine_error += avg_magazine_error
         total_avg_fire_rate_error += avg_fire_rate_error
@@ -29,14 +32,21 @@ def main():
         total_avg_opr_error += avg_opr_error
         total_avg_weight_based_max_fire_rate_error += avg_weight_based_max_fire_rate_error
         total_avg_weight_based_error += avg_weight_based_error
+        total_avg_weight_based_first_volley_error += avg_weight_based_first_volley_error
+        total_avg_magazine_shots_error += avg_magazine_shots_error
+        total_avg_volley_shots_error += avg_volley_shots_error
 
     print(f"Total avg magazine error: {total_avg_magazine_error / NUMBER_OF_RUNS}")
     print(f"Total avg fire rate error: {total_avg_fire_rate_error / NUMBER_OF_RUNS}")
     print(f"Total avg volley error: {total_avg_volley_error / NUMBER_OF_RUNS}")
     print(f"Total avg opr error: {total_avg_opr_error / NUMBER_OF_RUNS}")
+    print("-" * 40)
+    print(f"Total avg magazine shots error: {total_avg_magazine_shots_error / NUMBER_OF_RUNS}")
+    print(f"Total avg volley shots error: {total_avg_volley_shots_error / NUMBER_OF_RUNS}")
+    print("-" * 40)
     print(f"Total avg weight based max fire rate error: {total_avg_weight_based_max_fire_rate_error / NUMBER_OF_RUNS}")
     print(f"Total avg weight based error: {total_avg_weight_based_error / NUMBER_OF_RUNS}")
-
+    print(f"Total avg weight based (first volley) error: {total_avg_weight_based_first_volley_error / NUMBER_OF_RUNS}")
 
 
 def run_simulation():
@@ -56,6 +66,7 @@ def run_simulation():
     opr = OPR(all_robots)
     weight_based_max_fire_rate_metric = WeightBasedMaxFireRateMetric(all_robots)
     weight_based_metric = WeightBasedMetric(all_robots)
+    weight_based_first_volley_metric = WeightBasedFirstVolleyMetric(all_robots)
 
     notification_step = 1  # just to save console space where we can
     for i, match in enumerate(schedule): # enumerate takes a list and returns pairs of (index, value)
@@ -89,6 +100,7 @@ def run_simulation():
         robot_scores = fire_rate_metric.calculate_score_by_fire_rate(current_match_data["red_team_robots"], current_match_data["red_team_hits"], 10)
         weight_based_max_fire_rate_metric.calculate_weight_based_max_fire_rate(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
         weight_based_metric.calculate_weight_based_metric(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
+        weight_based_first_volley_metric.calculate_weight_based_first_volley_metric(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
 
         if (i + 1) % notification_step == 0:
             # print(f"Total red team shots: {current_match_data['red_team_shots']}")
@@ -148,6 +160,7 @@ def run_simulation():
         robot_scores = fire_rate_metric.calculate_score_by_fire_rate(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"], 10)
         weight_based_max_fire_rate_metric.calculate_weight_based_max_fire_rate(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
         weight_based_metric.calculate_weight_based_metric(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
+        weight_based_first_volley_metric.calculate_weight_based_first_volley_metric(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
 
         opr.add_match(match.red_alliance, current_match_data["red_team_hits"], match.blue_alliance, current_match_data["blue_team_hits"])
         opr.calculate_opr()
@@ -319,6 +332,9 @@ def run_simulation():
     total_opr_error = 0
     total_weight_based_max_fire_rate_error = 0
     total_weight_based_error = 0
+    total_weight_based_first_volley_error = 0
+    total_magazine_shots_error = 0
+    total_volley_shots_error = 0
 
     robot_count = len(robot_names_list)
 
@@ -326,10 +342,14 @@ def run_simulation():
         robot_stats = final_robot_stats[robot_name]
 
         actual_hits = robot_stats["total_shots_hit"]
+        actual_shots = robot_stats["total_shots_fired"]
         scouted_shots = robot_stats["total_shots_scouted"]
 
         magazine_error = calculate_error(scouted_shots, actual_hits)
         total_magazine_error += magazine_error
+
+        magazine_shots_error = calculate_error(scouted_shots, actual_shots)
+        total_magazine_shots_error += magazine_shots_error
 
         robot_avg_fire_rate = fire_rate_metric.get_averages()[robot_name][1]
         fire_rate_scouted_hits = robot_avg_fire_rate * robot_stats['total_fire_time']
@@ -341,6 +361,9 @@ def run_simulation():
 
         volley_error = calculate_error(volley_avg_rate_total, actual_hits)
         total_volley_error += volley_error
+
+        volley_shots_error = calculate_error(volley_avg_rate_total, actual_shots)
+        total_volley_shots_error += volley_shots_error
 
         opr_value = opr.get_opr()[robot_name]
 
@@ -356,27 +379,43 @@ def run_simulation():
         weight_based_error = calculate_error(weight_based_metric.get_final_scores()[robot_name], actual_hits)
         total_weight_based_error += weight_based_error
 
-    avg_magazine_error = total_magazine_error / robot_count
-    print(f"Average Magazine Error: {avg_magazine_error:.2f}%")
-
-    avg_fire_rate_error = total_fire_rate_error / robot_count
-    print(f"Average Fire Rate Error: {avg_fire_rate_error:.2f}%")
-
-    avg_volley_error = total_volley_error / robot_count
-    print(f"Average Volley Avg Error: {avg_volley_error:.2f}%")
+        weight_based_first_volley_error = calculate_error(weight_based_first_volley_metric.get_final_scores()[robot_name], actual_hits)
+        total_weight_based_first_volley_error += weight_based_first_volley_error
 
     avg_opr_error = total_opr_error / robot_count
     print(f"Average OPR Error: {avg_opr_error:.2f}%")
 
+    avg_fire_rate_error = total_fire_rate_error / robot_count
+    print(f"Average Fire Rate Error: {avg_fire_rate_error:.2f}%")
+
+    print("-" * 40)
+
+    avg_magazine_error = total_magazine_error / robot_count
+    print(f"Magazine Size Hits Error: {avg_magazine_error:.2f}%")
+
+    avg_magazine_shots_error = total_magazine_shots_error / robot_count
+    print(f"Magazine Size Shots Error: {avg_magazine_shots_error:.2f}%")
+
+    avg_volley_error = total_volley_error / robot_count
+    print(f"First Volley Hits Error: {avg_volley_error:.2f}%")
+
+    avg_volley_shots_error = total_volley_shots_error / robot_count
+    print(f"First Volley Shots Error: {avg_volley_shots_error:.2f}%")
+
+    print("-" * 40)
+
     avg_weight_based_max_fire_rate_error = total_weight_based_max_fire_rate_error / robot_count
-    print(f"Average Weight Based Max Fire Rate Error: {avg_weight_based_max_fire_rate_error:.2f}%")
+    print(f"Weight Based + Max Fire Rate (Magazine) error rate: {avg_weight_based_max_fire_rate_error:.2f}%")
 
     avg_weight_based_error = total_weight_based_error / robot_count
-    print(f"Average Weight Based Error: {avg_weight_based_error:.2f}%")
+    print(f"Weight Based (Magazine) error rate: {avg_weight_based_error:.2f}%")
+
+    avg_weight_based_first_volley_error = total_weight_based_first_volley_error / robot_count
+    print(f"Weight Based (First Volley) error rate: {avg_weight_based_first_volley_error:.2f}%")
 
     print("\n") # like alw terminal next to a line is annoying me
 
-    return avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error, avg_weight_based_max_fire_rate_error, avg_weight_based_error
+    return avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error, avg_weight_based_max_fire_rate_error, avg_weight_based_error, avg_weight_based_first_volley_error, avg_magazine_shots_error, avg_volley_shots_error
 
 
 if __name__ == "__main__":
