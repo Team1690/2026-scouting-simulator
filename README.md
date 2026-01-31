@@ -16,9 +16,13 @@ We simulate a "real" FRC tournament with 24 robots, each with a unique firing pa
 ## How It Works?
 
 **Robot Creation**
-24 unique robots each with distinct characteristics:
+Now features TWO sets of 24 unique robots (48 total configs) to test different behaviors:
+1. **Time Based Robots**: The original set. Firing patterns are pure functions of time (e.g. shot rate increases as time goes on).
+2. **Magazine Size Based Robots**: New set. Firing patterns depend on how full the magazine is (e.g. shoots faster when full, slower when empty).
+
+Each robot has:
 - Magazine size (fuel capacity)
-- Firing rate function (dynamic shot patterns over time)
+- Firing rate function (dynamic shot patterns)
 - Accuracy percentage
 - Maximum fire rate
 
@@ -45,20 +49,33 @@ After the first match, calculates the robots score rate (hits/time). Then in fut
 ### 5. **Volley Average Rate (Fixed Window)**
 Similar to method 4 (Match Average Rate) but uses only the first volley instead of the full first match. Takes the fire rate from the very first volley (shots/time not hits/time) and applies it to all future volleys and matches.
 
+### 6. **Weight Based Metric**
+Takes the total alliance hits and distributes them back to individual robots weighted by their "scouted shots" (how many shots were scouted using the magazine method). Basically, if we saw Robot A take 70% of the shots, we give them 70% of the hits.
+
+### 7. **Weight Based Metric (Max Fire Rate Cap)**
+Same as the standard Weight Based Metric, but with a sanity check: a robot cannot have hit more balls than it could physically fire in that time (Max Fire Rate * Time). If a robot gets too many hits assigned, we cap it and redistribute the extra hits to the other robots.
+
+### 8. **Weight Based Metric (First Volley)**
+Similar to the standard Weight Based Metric, but uses the *First Volley* fire rate to predict the scouted shots instead of using the magazine method to count shots.
+
 
 ### Files Descriptions
 
 - **`2026_fuel_scouting_sim.py`**: same as main.py for most project, its the main file that runs the simulation
 - **`robot_model.py`**: defines the `RobotModel` class (the robot)
-- **`robot_configs.py`**: the 24 unique robots with different firing patterns
-- **`fire_rate_functions.py`**: contains the different firing rate functions
+- **`robot_configs.py`**: the 24 time-based robot configurations
+- **`robot_configs_magazine_size.py`**: the 24 magazine-size-based robot configurations
+- **`fire_rate_functions.py`**: contains the time-based firing rate functions
+- **`magazine_size_fire_rate_functions.py`**: contains the magazine-based firing rate functions
 - **`simulation_logic.py`**: implements the `scout_robot_match()` function (the match simulation)
 - **`match_maker.py`**: frc scheduling algorithm to create balanced match schedules
 - **`metrics.py`**: contains the different scouting metrics
 - **`utils.py`**: utility functions (it has just the error calculations)
 
 ## Fire Rate Functions Visualization
-To visualize the different robots firing patterns the **`fire_rate_functions_pages`** folder contains 4 summary pages (`summary_page_1.png` to `summary_page_4.png`) that compile all 24 mathematical firing patterns from `fire_rate_functions.py` into a side by side comparison.
+To visualize the different robots firing patterns check out these folders:
+- **`time based functions png's`**: Contains summary pages for the time-based robots.
+- **`magazine size based functions png's`**: Contains summary pages for the magazine-based robots.
 
 ## disclaimer
 the code is highly unoptimized and unreadable. Good luck.
