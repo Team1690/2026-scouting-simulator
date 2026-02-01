@@ -12,7 +12,7 @@ from utils import *
 from scouter_model import *
 
 def run_full_simulation_suite(robot_getter, suite_label):
-    NUMBER_OF_RUNS = 1
+    NUMBER_OF_RUNS = 25
 
     total_avg_magazine_error = 0
     total_avg_fire_rate_error = 0
@@ -49,14 +49,14 @@ def run_full_simulation_suite(robot_getter, suite_label):
             total_avg_weight_based_max_fire_rate_error / NUMBER_OF_RUNS,
             total_avg_weight_based_error / NUMBER_OF_RUNS,
             total_avg_weight_based_first_volley_error / NUMBER_OF_RUNS,
+            total_avg_first_volley_accuracy_weight_error / NUMBER_OF_RUNS,
             total_avg_magazine_shots_error / NUMBER_OF_RUNS,
-            total_avg_volley_shots_error / NUMBER_OF_RUNS,
-            total_avg_first_volley_accuracy_weight_error / NUMBER_OF_RUNS)
+            total_avg_volley_shots_error / NUMBER_OF_RUNS)
 
 
 def run_simulation(all_robots):
     MATCHES_PER_ROBOT = 10
-    ITERATIONS = 10000
+    ITERATIONS = 5000
 
     schedule, schedule_score = make_matches(all_robots, MATCHES_PER_ROBOT, ITERATIONS)
 

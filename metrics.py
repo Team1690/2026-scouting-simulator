@@ -297,15 +297,24 @@ class FirstVolleyAccuracyWeightMetric:
         final_scores = {}
 
         for robot_stats in robot_stats_list:
-            first_volley = robot_stats["stats_per_volley"][0]
 
-            error_margin = random.uniform(0.9, 1.1) # 10% error margin
+            for i in range(len(robot_stats["stats_per_volley"])):
+                first_volley = robot_stats["stats_per_volley"][i]
 
-            misses = first_volley["misses"] * error_margin
-            points = first_volley["points"] * error_margin
-            first_volley_total_shots = points + misses
+                # error margins
+                # points_error_margin = round(random.gauss(0, 10))
+                # misses_error_margin = round(random.gauss(0, 10))
 
-            accuracy = points / first_volley_total_shots
+                misses = first_volley["misses"]
+                points = first_volley["points"]
+                first_volley_total_shots = points + misses
+                first_volley_total_shots += round(random.gauss(0, first_volley_total_shots * 0.1))
+
+                if first_volley_total_shots > 0:
+                    accuracy = points / first_volley_total_shots
+                    break
+                else:
+                    accuracy = 0
 
             accuracy_weight = robot_stats["total_scouted_shots"] * accuracy
 
