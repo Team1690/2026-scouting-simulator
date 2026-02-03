@@ -1,13 +1,14 @@
 from robot_model import RobotModel
 import math
 from fire_rate_functions import *
+from parameters import *
 import random
 
 def get_accuracy():
-    return random.uniform(0.75, 0.95)
+    return random.uniform(MIN_ACCURACY, MAX_ACCURACY)
 
 def get_magazine_size():
-    return random.randint(20, 60)
+    return random.randint(MIN_MAGAZINE_SIZE, MAX_MAGAZINE_SIZE)
 
 def get_time_based_robots():
 

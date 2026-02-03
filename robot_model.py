@@ -1,4 +1,5 @@
 import random
+from parameters import *
 
 class RobotModel:
     def __init__(self, name: str, magazine_size: int, max_fire_rate: float, accuracy: float, fire_rate_function):
@@ -28,13 +29,13 @@ class RobotModel:
         t = 0.0
         current_fuel_in_magazine = round(self.magazine_size * magazine_percentage)
 
-        max_time = 1000.0
+        max_time = MAX_TIME_TO_DEPLETE
 
         while current_fuel_in_magazine > 0:
             if t > max_time:
                 return float('inf')
 
-            current_fuel_in_magazine -= self.fire_rate_function(t) * dt + random.gauss(0, 1) # add some jitter
+            current_fuel_in_magazine -= self.fire_rate_function(t) * dt + random.gauss(0, RATE_OF_FIRE_JITTER) # add some jitter
             t += dt
 
         return t
@@ -68,14 +69,14 @@ class RobotModelMagazineSizeFireRate:
         t = 0.0
         current_fuel_in_magazine = round(self.magazine_size * magazine_percentage)
 
-        max_time = 1000.0
+        max_time = MAX_TIME_TO_DEPLETE
 
         while current_fuel_in_magazine > 0:
             if t > max_time:
                 return float('inf')
 
             current_magazine_percentage = (current_fuel_in_magazine / self.magazine_size) * 100
-            current_fuel_in_magazine -= self.magazine_size_fire_rate_function(current_magazine_percentage) * dt + random.gauss(0, 1) # add some jitter
+            current_fuel_in_magazine -= self.magazine_size_fire_rate_function(current_magazine_percentage) * dt + random.gauss(0, RATE_OF_FIRE_JITTER) # add some jitter
             t += dt
 
         return t

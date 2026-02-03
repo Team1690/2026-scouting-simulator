@@ -61,7 +61,7 @@ Similar to the standard Weight Based Metric, but uses the *First Volley* fire ra
 
 ### Files Descriptions
 
-- **`2026_fuel_scouting_sim.py`**: same as main.py for most project, its the main file that runs the simulation
+- **`main.py`**: same as main.py for most project, its the main file that runs the simulation
 - **`robot_model.py`**: defines the `RobotModel` class (the robot)
 - **`robot_configs.py`**: the 24 time-based robot configurations
 - **`robot_configs_magazine_size.py`**: the 24 magazine-size-based robot configurations

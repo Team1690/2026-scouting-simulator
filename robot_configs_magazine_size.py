@@ -4,12 +4,13 @@ from fire_rate_functions import *
 from magazine_size_fire_rate_functions import charge_discharge_magazine_size_fire_rate, discharge_magazine_size_fire_rate, cooldown_magazine_size_fire_rate
 import random
 import functools
+from parameters import *
 
 def get_accuracy():
-    return random.uniform(0.75, 0.95)
+    return random.uniform(MIN_ACCURACY, MAX_ACCURACY)
 
 def get_magazine_size():
-    return random.randint(20, 60)
+    return random.randint(MIN_MAGAZINE_SIZE, MAX_MAGAZINE_SIZE)
 
 def get_all_robots():
 

@@ -3,6 +3,7 @@ import random
 from utils import calculate_error
 from robot_model import RobotModel
 from scouter_model import ScouterModel
+from parameters import *
 # from metrics import MagazineSizeMetric
 
 def scout_robot_match(robot: RobotModel, metric: ScouterModel, accuracy_variance: float = 0.1) -> dict:
@@ -13,11 +14,11 @@ def scout_robot_match(robot: RobotModel, metric: ScouterModel, accuracy_variance
     stats_per_volley = []
 
     initial_match_accuracy = robot.accuracy
-    number_of_volleys = random.randint(1, 6) # random number of vollies to simulate
+    number_of_volleys = random.randint(MIN_NUMBER_OF_VOLLEYS, MAX_NUMBER_OF_VOLLEYS) # random number of vollies to simulate
     for i in range(number_of_volleys):
         # print(f"\nSimulation run {i + 1} / {number_of_volleys}")
 
-        magazine_percentage = random.uniform(0.1, 1.0) # random fill between 10% and 100% for the magazine
+        magazine_percentage = random.uniform(MIN_MAGAZINE_FILL_PERCENTAGE, MAX_MAGAZINE_FILL_PERCENTAGE) # random fill between 10% and 100% for the magazine
         # print(f"Starting simulation (Fuel Level: {magazine_percentage * 100:.1f}%)")
 
         # print(f"\nSimulation for: {robot.name}")
@@ -37,7 +38,7 @@ def scout_robot_match(robot: RobotModel, metric: ScouterModel, accuracy_variance
         points, misses = robot.get_points_for_magazine(magazine_percentage)
         total_hits += points # add the points to the total hits
 
-        time_to_empty = robot.time_to_deplete(0.05, magazine_percentage)
+        time_to_empty = robot.time_to_deplete(SIMULATION_TIME_STEP, magazine_percentage)
         total_time_to_empty += time_to_empty
         # print(f"Time to deplete: {time_to_empty:.2f}s")
 

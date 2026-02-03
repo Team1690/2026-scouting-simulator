@@ -10,16 +10,7 @@ from robot_configs import get_time_based_robots
 from robot_configs_magazine_size import get_all_robots as get_magazine_robots
 from utils import *
 from scouter_model import *
-
-MATCH_ACCURACY_VARIANCE = 0.1
-SCOUT_MIN_TIME_ERROR = -0.25
-SCOUT_MAX_TIME_ERROR = 0.25
-SCOUT_MAGAZINE_ERROR = 0.1
-
-NUMBER_OF_RUNS = 15
-
-MATCHES_PER_ROBOT = 10
-ITERATIONS = 5000
+from parameters import *
 
 def run_full_simulation_suite(robot_getter, suite_label):
     total_avg_magazine_error = 0
@@ -86,7 +77,7 @@ def run_simulation(all_robots):
     first_volley_accuracy_weight_metric_tournament = FirstVolleyAccuracyWeightMetricTournament(all_robots)
     first_volley_bps_weighted_accuracy_metric = FirstVolleyBPSWeightedAccuracy(all_robots)
 
-    notification_step = 1  # just to save console space where we can
+    notification_step = NOTIFICATION_STEP  # just to save console space where we can
     for i, match in enumerate(schedule): # enumerate takes a list and returns pairs of (index, value)
         # if (i + 1) % notification_step == 0:
         #     print("\n" + "=" * 80)
@@ -501,9 +492,18 @@ def main():
     print(f"Magazine Error: {SCOUT_MAGAZINE_ERROR * 100}%")
     print(f"Match Accuracy Variance: {MATCH_ACCURACY_VARIANCE * 100}%")
     print("-" * 40)
+    print(f"Robot Config Accuracy: {MIN_ACCURACY * 100}% - {MAX_ACCURACY * 100}%")
+    print(f"Robot Config Magazine Size: {MIN_MAGAZINE_SIZE} - {MAX_MAGAZINE_SIZE}")
+    print("-" * 40)
     print(f"Number of runs: {NUMBER_OF_RUNS}")
     print(f"Matches per robot: {MATCHES_PER_ROBOT}")
     print(f"Iterations: {ITERATIONS}")
+    print("-" * 40)
+    print(f"Simulation time step: {SIMULATION_TIME_STEP}")
+    print(f"Min number of volleys: {MIN_NUMBER_OF_VOLLEYS}")
+    print(f"Max number of volleys: {MAX_NUMBER_OF_VOLLEYS}")
+    print(f"Min magazine fill percentage: {MIN_MAGAZINE_FILL_PERCENTAGE}")
+    print(f"Max magazine fill percentage: {MAX_MAGAZINE_FILL_PERCENTAGE}")
     print("\n")
 
 if __name__ == "__main__":
