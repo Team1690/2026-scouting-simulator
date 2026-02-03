@@ -12,7 +12,7 @@ from utils import *
 from scouter_model import *
 
 def run_full_simulation_suite(robot_getter, suite_label):
-    NUMBER_OF_RUNS = 25
+    NUMBER_OF_RUNS = 15
 
     total_avg_magazine_error = 0
     total_avg_fire_rate_error = 0
@@ -24,12 +24,13 @@ def run_full_simulation_suite(robot_getter, suite_label):
     total_avg_magazine_shots_error = 0
     total_avg_volley_shots_error = 0
     total_avg_first_volley_accuracy_weight_error = 0
+    total_avg_first_volley_accuracy_weight_tournament_error = 0
 
     all_robots = robot_getter()
 
     for i in range(NUMBER_OF_RUNS):
         print(f"\n\nRUN {i + 1} / {NUMBER_OF_RUNS} \n\n")
-        avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error, avg_weight_based_max_fire_rate_error, avg_weight_based_error, avg_weight_based_first_volley_error, avg_first_volley_accuracy_weight_error, avg_magazine_shots_error, avg_volley_shots_error = run_simulation(all_robots)
+        avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error, avg_weight_based_max_fire_rate_error, avg_weight_based_error, avg_weight_based_first_volley_error, avg_first_volley_accuracy_weight_error, avg_magazine_shots_error, avg_volley_shots_error, avg_first_volley_accuracy_weight_tournament_error = run_simulation(all_robots)
 
         total_avg_magazine_error += avg_magazine_error
         total_avg_fire_rate_error += avg_fire_rate_error
@@ -41,6 +42,7 @@ def run_full_simulation_suite(robot_getter, suite_label):
         total_avg_magazine_shots_error += avg_magazine_shots_error
         total_avg_volley_shots_error += avg_volley_shots_error
         total_avg_first_volley_accuracy_weight_error += avg_first_volley_accuracy_weight_error
+        total_avg_first_volley_accuracy_weight_tournament_error += avg_first_volley_accuracy_weight_tournament_error
 
     return (total_avg_magazine_error / NUMBER_OF_RUNS,
             total_avg_fire_rate_error / NUMBER_OF_RUNS,
@@ -51,7 +53,8 @@ def run_full_simulation_suite(robot_getter, suite_label):
             total_avg_weight_based_first_volley_error / NUMBER_OF_RUNS,
             total_avg_first_volley_accuracy_weight_error / NUMBER_OF_RUNS,
             total_avg_magazine_shots_error / NUMBER_OF_RUNS,
-            total_avg_volley_shots_error / NUMBER_OF_RUNS)
+            total_avg_volley_shots_error / NUMBER_OF_RUNS,
+            total_avg_first_volley_accuracy_weight_tournament_error / NUMBER_OF_RUNS)
 
 
 def run_simulation(all_robots):
@@ -71,6 +74,7 @@ def run_simulation(all_robots):
     weight_based_metric = WeightBasedMetric(all_robots)
     weight_based_first_volley_metric = WeightBasedFirstVolleyMetric(all_robots)
     first_volley_accuracy_weight_metric = FirstVolleyAccuracyWeightMetric(all_robots)
+    first_volley_accuracy_weight_metric_tournament = FirstVolleyAccuracyWeightMetricTournament(all_robots)
 
     notification_step = 1  # just to save console space where we can
     for i, match in enumerate(schedule): # enumerate takes a list and returns pairs of (index, value)
@@ -106,6 +110,7 @@ def run_simulation(all_robots):
         weight_based_metric.calculate_weight_based_metric(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
         weight_based_first_volley_metric.calculate_weight_based_first_volley_metric(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
         first_volley_accuracy_weight_metric.calculate_first_volley_accuracy_weight(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
+        first_volley_accuracy_weight_metric_tournament.calculate_first_volley_accuracy_weight_tournament(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
 
         if (i + 1) % notification_step == 0:
             # print(f"Total red team shots: {current_match_data['red_team_shots']}")
@@ -167,6 +172,7 @@ def run_simulation(all_robots):
         weight_based_metric.calculate_weight_based_metric(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
         weight_based_first_volley_metric.calculate_weight_based_first_volley_metric(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
         first_volley_accuracy_weight_metric.calculate_first_volley_accuracy_weight(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
+        first_volley_accuracy_weight_metric_tournament.calculate_first_volley_accuracy_weight_tournament(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
 
         opr.add_match(match.red_alliance, current_match_data["red_team_hits"], match.blue_alliance, current_match_data["blue_team_hits"])
         opr.calculate_opr()
@@ -342,6 +348,7 @@ def run_simulation(all_robots):
     total_magazine_shots_error = 0
     total_volley_shots_error = 0
     total_first_volley_accuracy_weight_error = 0
+    total_first_volley_accuracy_weight_tournament_error = 0
 
     robot_count = len(robot_names_list)
 
@@ -392,6 +399,9 @@ def run_simulation(all_robots):
         first_volley_accuracy_weight_error = calculate_error(first_volley_accuracy_weight_metric.get_final_scores()[robot_name], actual_hits)
         total_first_volley_accuracy_weight_error += first_volley_accuracy_weight_error
 
+        first_volley_accuracy_weight_tournament_error = calculate_error(first_volley_accuracy_weight_metric_tournament.get_final_scores()[robot_name], actual_hits)
+        total_first_volley_accuracy_weight_tournament_error += first_volley_accuracy_weight_tournament_error
+
     avg_opr_error = total_opr_error / robot_count
     print(f"Average OPR Error: {avg_opr_error:.2f}%")
 
@@ -426,16 +436,20 @@ def run_simulation(all_robots):
     avg_first_volley_accuracy_weight_error = total_first_volley_accuracy_weight_error / robot_count
     print(f"First Volley Accuracy Weight error rate: {avg_first_volley_accuracy_weight_error:.2f}%")
 
+    avg_first_volley_accuracy_weight_tournament_error = total_first_volley_accuracy_weight_tournament_error / robot_count
+    print(f"First Volley Accuracy Weight (Tournament) error rate: {avg_first_volley_accuracy_weight_tournament_error:.2f}%")
+
     print("\n") # like alw terminal next to a line is annoying me
 
-    return avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error, avg_weight_based_max_fire_rate_error, avg_weight_based_error, avg_weight_based_first_volley_error, avg_first_volley_accuracy_weight_error, avg_magazine_shots_error, avg_volley_shots_error
+    return avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error, avg_weight_based_max_fire_rate_error, avg_weight_based_error, avg_weight_based_first_volley_error, avg_first_volley_accuracy_weight_error, avg_magazine_shots_error, avg_volley_shots_error, avg_first_volley_accuracy_weight_tournament_error
 
 
 def print_suite_results(stats, suite_label):
     (avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error,
      avg_weight_based_max_fire_rate_error, avg_weight_based_error,
      avg_weight_based_first_volley_error, avg_first_volley_accuracy_weight_error,
-     avg_magazine_shots_error, avg_volley_shots_error) = stats
+     avg_magazine_shots_error, avg_volley_shots_error,
+     avg_first_volley_accuracy_weight_tournament_error) = stats
 
     print(f"\n\n{'='*20} {suite_label} RESULTS {'='*20}\n\n")
     print(f"Total avg magazine error: {avg_magazine_error}")
@@ -450,6 +464,7 @@ def print_suite_results(stats, suite_label):
     print(f"Total avg weight based error: {avg_weight_based_error}")
     print(f"Total avg weight based (first volley) error: {avg_weight_based_first_volley_error}")
     print(f"Total avg first volley accuracy weight error: {avg_first_volley_accuracy_weight_error}")
+    print(f"Total avg first volley accuracy weight (tournament) error: {avg_first_volley_accuracy_weight_tournament_error}")
 
 
 def main():

@@ -12,6 +12,7 @@ def scout_robot_match(robot: RobotModel, metric: ScouterModel) -> dict:
     total_time_to_empty = 0
     stats_per_volley = []
 
+    initial_match_accuracy = robot.accuracy
     number_of_volleys = random.randint(1, 6) # random number of vollies to simulate
     for i in range(number_of_volleys):
         # print(f"\nSimulation run {i + 1} / {number_of_volleys}")
@@ -23,6 +24,11 @@ def scout_robot_match(robot: RobotModel, metric: ScouterModel) -> dict:
 
         # print(f"Model settings: Magazine Size: {robot.magazine_size}, Accuracy: {robot.accuracy}")
         # print("\n")
+
+        variance = random.gauss(0, 0.1)
+        match_accuracy = max(0.0, min(1.0, initial_match_accuracy + variance))
+
+        robot.accuracy = match_accuracy
 
         current_fuel = round(magazine_percentage * robot.magazine_size)
         total_shots += current_fuel # add the fuel to the total shots
@@ -61,6 +67,8 @@ def scout_robot_match(robot: RobotModel, metric: ScouterModel) -> dict:
             # print(f"\nReal accuracy: {real_accuracy:.2f}% (Placed: {robot.accuracy * 100:.1f}%)")
 
         # print(f"Total shots: {current_fuel} ({points} hits, {misses} misses)")
+
+    robot.accuracy = initial_match_accuracy
 
     # same amount of deta as before just readable and understandable
     # print(f"- Robot: {robot.name} (Volleys: {number_of_volleys})")

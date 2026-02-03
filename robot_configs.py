@@ -4,7 +4,7 @@ from fire_rate_functions import *
 import random
 
 def get_accuracy():
-    return random.uniform(0.5, 1.0)
+    return random.uniform(0.75, 0.95)
 
 def get_magazine_size():
     return random.randint(20, 60)

@@ -237,7 +237,10 @@ class WeightBasedMetric:
         current_total_shots = sum(scouted_shots[robot_name] for robot_name in uncapped)
 
         for robot_name in uncapped:
-            final_scores[robot_name] += remaining_score * scouted_shots[robot_name] / current_total_shots
+            if current_total_shots > 0:
+                final_scores[robot_name] += remaining_score * scouted_shots[robot_name] / current_total_shots
+            else:
+                final_scores[robot_name] = 0
 
         for robot_name, final_score in final_scores.items():
             self.final_scores[robot_name] += final_score
@@ -276,7 +279,8 @@ class WeightBasedFirstVolleyMetric:
         current_total_shots = sum(scouted_shots[robot_name] for robot_name in uncapped)
 
         for robot_name in uncapped:
-            final_scores[robot_name] += remaining_score * scouted_shots[robot_name] / current_total_shots
+            if current_total_shots > 0:
+                final_scores[robot_name] += remaining_score * scouted_shots[robot_name] / current_total_shots
 
         for robot_name, final_score in final_scores.items():
             self.final_scores[robot_name] += final_score
@@ -325,7 +329,69 @@ class FirstVolleyAccuracyWeightMetric:
         current_total_weight = sum(first_volley_accuracy[robot_name] for robot_name in uncapped)
 
         for robot_name in uncapped:
-            final_scores[robot_name] += total_score * first_volley_accuracy[robot_name] / current_total_weight
+            if current_total_weight > 0:
+                final_scores[robot_name] += total_score * first_volley_accuracy[robot_name] / current_total_weight
+
+        for robot_name, final_score in final_scores.items():
+            self.final_scores[robot_name] += final_score
+
+    def get_final_scores(self):
+        return self.final_scores
+
+class FirstVolleyAccuracyWeightMetricTournament:
+    def __init__(self, all_robots):
+        self.final_scores = {}
+        self.tournament_accuracies = {}
+
+        for robot in all_robots:
+            self.final_scores[robot.name] = 0.0
+
+    def calculate_first_volley_accuracy_weight_tournament(self, robot_stats_list: list, total_score: int):
+        first_volley_accuracy = {}
+        uncapped = []
+        final_scores = {}
+
+        for robot_stats in robot_stats_list:
+
+            if robot_stats["name"] not in self.tournament_accuracies:
+                for i in range(len(robot_stats["stats_per_volley"])):
+                    first_volley = robot_stats["stats_per_volley"][i]
+
+                    # error margins
+                    # points_error_margin = round(random.gauss(0, 10))
+                    # misses_error_margin = round(random.gauss(0, 10))
+
+                    misses = first_volley["misses"]
+                    points = first_volley["points"]
+                    first_volley_total_shots = points + misses
+                    first_volley_total_shots += round(random.gauss(0, first_volley_total_shots * 0.1))
+
+                    if first_volley_total_shots > 0:
+                        accuracy = points / first_volley_total_shots
+                        self.tournament_accuracies[robot_stats["name"]] = accuracy
+                        break
+                    else:
+                        accuracy = 0
+
+            if robot_stats["name"] in self.tournament_accuracies:
+                accuracy = self.tournament_accuracies[robot_stats["name"]]
+            else:
+                accuracy = 0
+
+            accuracy_weight = robot_stats["total_scouted_shots"] * accuracy
+
+            first_volley_accuracy[robot_stats["name"]] = accuracy_weight
+            final_scores[robot_stats["name"]] = 0.0
+            uncapped.append(robot_stats["name"])
+
+        current_total_weight = sum(first_volley_accuracy[robot_name] for robot_name in uncapped)
+
+        if current_total_weight > 0:
+            for robot_name in uncapped:
+                if first_volley_accuracy[robot_name] > 0:
+                    final_scores[robot_name] += total_score * first_volley_accuracy[robot_name] / current_total_weight
+        else:
+             pass
 
         for robot_name, final_score in final_scores.items():
             self.final_scores[robot_name] += final_score
