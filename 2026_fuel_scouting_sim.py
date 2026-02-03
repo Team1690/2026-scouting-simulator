@@ -467,7 +467,7 @@ def print_suite_results(stats, suite_label):
     print("-" * 40)
     print(f"Total avg weight based max fire rate error: {avg_weight_based_max_fire_rate_error}")
     print(f"Total avg weight based error: {avg_weight_based_error}")
-    print(f"Total avg weight based (first volley) error: {avg_weight_based_first_volley_error}")
+    print(f"Total avg weight based (first volley BPS) error: {avg_weight_based_first_volley_error}")
     print(f"Total avg first volley accuracy weight error: {avg_first_volley_accuracy_weight_error}")
     print(f"Total avg first volley accuracy weight (tournament) error: {avg_first_volley_accuracy_weight_tournament_error}")
 
