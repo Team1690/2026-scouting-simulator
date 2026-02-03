@@ -479,9 +479,9 @@ def main():
     print_suite_results(time_based_stats, "TIME BASED ROBOT CONFIGS")
     print_suite_results(magazine_stats, "MAGAZINE SIZE BASED ROBOT CONFIGS")
 
-    print("\n" + "=" * 40)
+    print("\n" + "=" * 25)
     print("SIMULATION CONFIGURATION")
-    print("=" * 40)
+    print("=" * 25)
     print(f"Min Time Error: {SCOUT_MIN_TIME_ERROR} | Max Time Error: {SCOUT_MAX_TIME_ERROR}")
     print(f"Magazine Error: {SCOUT_MAGAZINE_ERROR * 100}%")
     print(f"Match Accuracy Variance: {MATCH_ACCURACY_VARIANCE * 100}%")
