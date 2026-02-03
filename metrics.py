@@ -398,3 +398,54 @@ class FirstVolleyAccuracyWeightMetricTournament:
 
     def get_final_scores(self):
         return self.final_scores
+
+class FirstVolleyBPSWeightedAccuracy:
+    def __init__(self, all_robots):
+        self.final_scores = {}
+        for robot in all_robots:
+            self.final_scores[robot.name] = 0.0
+
+    def calculate_first_volley_bps_weighted_accuracy(self, robot_stats_list: list, total_score: int):
+        bps_weighted_accuracy = {}
+        uncapped = []
+        final_scores = {}
+
+        for robot_stats in robot_stats_list:
+            first_volley = robot_stats["stats_per_volley"][0]
+
+            misses = first_volley["misses"]
+            points = first_volley["points"]
+            time_to_empty = first_volley["time_to_empty"]
+
+            first_volley_total_shots = points + misses
+            first_volley_total_shots += round(random.gauss(0, first_volley_total_shots * 0.1))
+
+            if time_to_empty > 0:
+                 bps = first_volley_total_shots / time_to_empty
+            else:
+                bps = 0
+
+            if first_volley_total_shots > 0:
+                accuracy = points / first_volley_total_shots
+            else:
+                accuracy = 0
+
+            projected_total_shots = bps * robot_stats["total_fire_time"]
+
+            metric_weight = projected_total_shots * accuracy
+
+            bps_weighted_accuracy[robot_stats["name"]] = metric_weight
+            final_scores[robot_stats["name"]] = 0.0
+            uncapped.append(robot_stats["name"])
+
+        current_total_weight = sum(bps_weighted_accuracy[robot_name] for robot_name in uncapped)
+
+        if current_total_weight > 0:
+            for robot_name in uncapped:
+                final_scores[robot_name] += total_score * bps_weighted_accuracy[robot_name] / current_total_weight
+
+        for robot_name, final_score in final_scores.items():
+            self.final_scores[robot_name] += final_score
+
+    def get_final_scores(self):
+        return self.final_scores
