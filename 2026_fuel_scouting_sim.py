@@ -485,6 +485,8 @@ def main():
     print(f"Min Time Error: {SCOUT_MIN_TIME_ERROR} | Max Time Error: {SCOUT_MAX_TIME_ERROR}")
     print(f"Magazine Error: {SCOUT_MAGAZINE_ERROR * 100}%")
     print(f"Match Accuracy Variance: {MATCH_ACCURACY_VARIANCE * 100}%")
+    print("-" * 40)
+    print(f"Number of runs: {NUMBER_OF_RUNS}")
     print(f"Matches per robot: {MATCHES_PER_ROBOT}")
     print(f"Iterations: {ITERATIONS}")
     print("\n")
