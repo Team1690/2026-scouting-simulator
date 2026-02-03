@@ -5,7 +5,7 @@ from robot_model import RobotModel
 from scouter_model import ScouterModel
 # from metrics import MagazineSizeMetric
 
-def scout_robot_match(robot: RobotModel, metric: ScouterModel) -> dict:
+def scout_robot_match(robot: RobotModel, metric: ScouterModel, accuracy_variance: float = 0.1) -> dict:
     total_shots = 0
     total_hits = 0
     total_scouted_shots = 0
@@ -25,7 +25,7 @@ def scout_robot_match(robot: RobotModel, metric: ScouterModel) -> dict:
         # print(f"Model settings: Magazine Size: {robot.magazine_size}, Accuracy: {robot.accuracy}")
         # print("\n")
 
-        variance = random.gauss(0, 0.1)
+        variance = random.gauss(0, accuracy_variance)
         match_accuracy = max(0.0, min(1.0, initial_match_accuracy + variance))
 
         robot.accuracy = match_accuracy

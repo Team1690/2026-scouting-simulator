@@ -11,6 +11,8 @@ from robot_configs_magazine_size import get_all_robots as get_magazine_robots
 from utils import *
 from scouter_model import *
 
+MATCH_ACCURACY_VARIANCE = 0.1
+
 def run_full_simulation_suite(robot_getter, suite_label):
     NUMBER_OF_RUNS = 15
 
@@ -97,7 +99,7 @@ def run_simulation(all_robots):
         # if (i + 1) % notification_step == 0: # check if the match number is a multiple of the notification step
         #     print("\n[RED TEAM]")
         for robot in match.red_alliance:
-            stats = scout_robot_match(robot, scout)
+            stats = scout_robot_match(robot, scout, MATCH_ACCURACY_VARIANCE)
             current_match_data["red_team_robots"].append(stats)
             current_match_data["red_team_hits"] += stats["total_hits"]
             current_match_data["red_team_shots"] += stats["total_shots"]
@@ -159,7 +161,7 @@ def run_simulation(all_robots):
         # if (i + 1) % notification_step == 0: # same as above
             # print("\n[BLUE TEAM]")
         for robot in match.blue_alliance:
-            stats = scout_robot_match(robot, scout)
+            stats = scout_robot_match(robot, scout, MATCH_ACCURACY_VARIANCE)
             current_match_data["blue_team_robots"].append(stats)
             current_match_data["blue_team_shots"] += stats["total_shots"]
             current_match_data["blue_team_hits"] += stats["total_hits"]
