@@ -12,10 +12,16 @@ from utils import *
 from scouter_model import *
 
 MATCH_ACCURACY_VARIANCE = 0.1
+SCOUT_MIN_TIME_ERROR = -0.25
+SCOUT_MAX_TIME_ERROR = 0.25
+SCOUT_MAGAZINE_ERROR = 0.1
+
+NUMBER_OF_RUNS = 10
+
+MATCHES_PER_ROBOT = 10
+ITERATIONS = 5000
 
 def run_full_simulation_suite(robot_getter, suite_label):
-    NUMBER_OF_RUNS = 15
-
     total_avg_magazine_error = 0
     total_avg_fire_rate_error = 0
     total_avg_volley_error = 0
@@ -60,14 +66,11 @@ def run_full_simulation_suite(robot_getter, suite_label):
 
 
 def run_simulation(all_robots):
-    MATCHES_PER_ROBOT = 10
-    ITERATIONS = 5000
-
     schedule, schedule_score = make_matches(all_robots, MATCHES_PER_ROBOT, ITERATIONS)
 
     match_results = []
 
-    scout = ScouterModel(-0.25, 0.25, 0.1) # min_time_error, max_time_error, magazine_error
+    scout = ScouterModel(SCOUT_MIN_TIME_ERROR, SCOUT_MAX_TIME_ERROR, SCOUT_MAGAZINE_ERROR) # min_time_error, max_time_error, magazine_error
     fire_rate_metric = IterativeAverageFireRateMetric(all_robots)
     fixed_window_metric = MatchAvgRateFixedWindowMetric()
     volley_avg_rate_fixed_window_metric = VolleyAvgRateFixedWindowMetric(all_robots)
@@ -475,6 +478,16 @@ def main():
 
     print_suite_results(time_based_stats, "TIME BASED ROBOT CONFIGS")
     print_suite_results(magazine_stats, "MAGAZINE SIZE BASED ROBOT CONFIGS")
+
+    print("\n" + "=" * 40)
+    print("SIMULATION CONFIGURATION")
+    print("=" * 40)
+    print(f"Min Time Error: {SCOUT_MIN_TIME_ERROR} | Max Time Error: {SCOUT_MAX_TIME_ERROR}")
+    print(f"Magazine Error: {SCOUT_MAGAZINE_ERROR * 100}%")
+    print(f"Match Accuracy Variance: {MATCH_ACCURACY_VARIANCE * 100}%")
+    print(f"Matches per robot: {MATCHES_PER_ROBOT}")
+    print(f"Iterations: {ITERATIONS}")
+    print("\n")
 
 if __name__ == "__main__":
     main()
