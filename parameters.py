@@ -1,5 +1,5 @@
 
-NUMBER_OF_RUNS = 10
+NUMBER_OF_RUNS = 15
 
 MATCHES_PER_ROBOT = 10
 ITERATIONS = 5000 # Iterations of match making
