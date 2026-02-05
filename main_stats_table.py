@@ -31,6 +31,22 @@ def calculate_summary_statistics(data):
         "Bias": np.mean(data)
     }
 
+def calculate_actual_statistics(actual_list, predicted_list):
+    """Calculate statistics for actual values (not percentages)."""
+    if not actual_list or not predicted_list:
+        return {
+            "Avg Scored": 0.0, "Median Scored": 0.0, "Avg Predicted": 0.0, "Median Predicted": 0.0, "Real Min": 0.0, "Real Max": 0.0
+        }
+
+    return {
+        "Avg Scored": np.mean(actual_list),
+        "Median Scored": np.median(actual_list),
+        "Avg Predicted": np.mean(predicted_list),
+        "Median Predicted": np.median(predicted_list),
+        "Real Min": np.min(actual_list),
+        "Real Max": np.max(actual_list)
+    }
+
 def run_simulation(all_robots):
     schedule, schedule_score = make_matches(all_robots, MATCHES_PER_ROBOT, ITERATIONS)
     # No need to track match_results for stats unless debugging
@@ -140,6 +156,23 @@ def run_simulation(all_robots):
         "First Volley BPS Weighted Accuracy (Tournament) Hits Error": []
     }
 
+    # Track actual values for each metric (actual, predicted)
+    actual_values = {
+        "Magazine Size Hits Error": {"actual": [], "predicted": []},
+        "Max Fire Rate Hits Error": {"actual": [], "predicted": []},
+        "First Volley Hits Error": {"actual": [], "predicted": []},
+        "OPR": {"actual": [], "predicted": []},
+        "Weight Based + Max Fire Rate (Magazine) Hits Error": {"actual": [], "predicted": []},
+        "Weight Based (Magazine) Hits Error": {"actual": [], "predicted": []},
+        "Weight Based (First Volley) Hits Error": {"actual": [], "predicted": []},
+        "First Volley Accuracy Weight Hits Error": {"actual": [], "predicted": []},
+        "Magazine Size Shots Error": {"actual": [], "predicted": []},
+        "First Volley Shots Error": {"actual": [], "predicted": []},
+        "First Volley Accuracy Weight (Tournament) Hits Error": {"actual": [], "predicted": []},
+        "First Volley BPS Weighted Accuracy Hits Error": {"actual": [], "predicted": []},
+        "First Volley BPS Weighted Accuracy (Tournament) Hits Error": {"actual": [], "predicted": []}
+    }
+
     for robot_name, stats in current_run_robot_stats.items():
         actual_hits = stats["total_hits"]
         actual_shots = stats["total_shots"]
@@ -147,37 +180,76 @@ def run_simulation(all_robots):
 
         # Magazine Hits Error
         errors["Magazine Size Hits Error"].append(calculate_error(scouted_shots, actual_hits))
+        actual_values["Magazine Size Hits Error"]["actual"].append(actual_hits)
+        actual_values["Magazine Size Hits Error"]["predicted"].append(scouted_shots)
+
         # Magazine Shots Error
         errors["Magazine Size Shots Error"].append(calculate_error(scouted_shots, actual_shots))
+        actual_values["Magazine Size Shots Error"]["actual"].append(actual_shots)
+        actual_values["Magazine Size Shots Error"]["predicted"].append(scouted_shots)
 
         # Max Fire Rate Hits Error
         robot_avg_fire_rate = fire_rate_metric.get_averages()[robot_name][1]
         fire_rate_scouted_hits = robot_avg_fire_rate * stats['total_fire_time']
         errors["Max Fire Rate Hits Error"].append(calculate_error(fire_rate_scouted_hits, actual_hits))
+        actual_values["Max Fire Rate Hits Error"]["actual"].append(actual_hits)
+        actual_values["Max Fire Rate Hits Error"]["predicted"].append(fire_rate_scouted_hits)
 
         # Volley Hits Error
         volley_avg_rate_total = stats['total_VolleyAvgRate']
         errors["First Volley Hits Error"].append(calculate_error(volley_avg_rate_total, actual_hits))
+        actual_values["First Volley Hits Error"]["actual"].append(actual_hits)
+        actual_values["First Volley Hits Error"]["predicted"].append(volley_avg_rate_total)
+
         # Volley Shots Error
         errors["First Volley Shots Error"].append(calculate_error(volley_avg_rate_total, actual_shots))
+        actual_values["First Volley Shots Error"]["actual"].append(actual_shots)
+        actual_values["First Volley Shots Error"]["predicted"].append(volley_avg_rate_total)
 
         # OPR
         opr_value = opr.get_opr().get(robot_name, 0)
         real_hits_per_match = actual_hits / stats['matches_played'] if stats['matches_played'] > 0 else 0
         errors["OPR"].append(calculate_error(opr_value, real_hits_per_match))
+        actual_values["OPR"]["actual"].append(real_hits_per_match)
+        actual_values["OPR"]["predicted"].append(opr_value)
 
         # Weight Based Metrics
-        errors["Weight Based + Max Fire Rate (Magazine) Hits Error"].append(calculate_error(weight_based_max_fire_rate_metric.get_final_scores()[robot_name], actual_hits))
-        errors["Weight Based (Magazine) Hits Error"].append(calculate_error(weight_based_metric.get_final_scores()[robot_name], actual_hits))
-        errors["Weight Based (First Volley) Hits Error"].append(calculate_error(weight_based_first_volley_metric.get_final_scores()[robot_name], actual_hits))
+        wb_max_fr_pred = weight_based_max_fire_rate_metric.get_final_scores()[robot_name]
+        errors["Weight Based + Max Fire Rate (Magazine) Hits Error"].append(calculate_error(wb_max_fr_pred, actual_hits))
+        actual_values["Weight Based + Max Fire Rate (Magazine) Hits Error"]["actual"].append(actual_hits)
+        actual_values["Weight Based + Max Fire Rate (Magazine) Hits Error"]["predicted"].append(wb_max_fr_pred)
 
-        errors["First Volley Accuracy Weight Hits Error"].append(calculate_error(first_volley_accuracy_weight_metric.get_final_scores()[robot_name], actual_hits))
-        errors["First Volley Accuracy Weight (Tournament) Hits Error"].append(calculate_error(first_volley_accuracy_weight_metric_tournament.get_final_scores()[robot_name], actual_hits))
+        wb_pred = weight_based_metric.get_final_scores()[robot_name]
+        errors["Weight Based (Magazine) Hits Error"].append(calculate_error(wb_pred, actual_hits))
+        actual_values["Weight Based (Magazine) Hits Error"]["actual"].append(actual_hits)
+        actual_values["Weight Based (Magazine) Hits Error"]["predicted"].append(wb_pred)
 
-        errors["First Volley BPS Weighted Accuracy Hits Error"].append(calculate_error(first_volley_bps_weighted_accuracy_metric.get_final_scores()[robot_name], actual_hits))
-        errors["First Volley BPS Weighted Accuracy (Tournament) Hits Error"].append(calculate_error(first_volley_bps_weighted_accuracy_tournament_metric.get_final_scores()[robot_name], actual_hits))
+        wb_fv_pred = weight_based_first_volley_metric.get_final_scores()[robot_name]
+        errors["Weight Based (First Volley) Hits Error"].append(calculate_error(wb_fv_pred, actual_hits))
+        actual_values["Weight Based (First Volley) Hits Error"]["actual"].append(actual_hits)
+        actual_values["Weight Based (First Volley) Hits Error"]["predicted"].append(wb_fv_pred)
 
-    return errors
+        fvaw_pred = first_volley_accuracy_weight_metric.get_final_scores()[robot_name]
+        errors["First Volley Accuracy Weight Hits Error"].append(calculate_error(fvaw_pred, actual_hits))
+        actual_values["First Volley Accuracy Weight Hits Error"]["actual"].append(actual_hits)
+        actual_values["First Volley Accuracy Weight Hits Error"]["predicted"].append(fvaw_pred)
+
+        fvaw_t_pred = first_volley_accuracy_weight_metric_tournament.get_final_scores()[robot_name]
+        errors["First Volley Accuracy Weight (Tournament) Hits Error"].append(calculate_error(fvaw_t_pred, actual_hits))
+        actual_values["First Volley Accuracy Weight (Tournament) Hits Error"]["actual"].append(actual_hits)
+        actual_values["First Volley Accuracy Weight (Tournament) Hits Error"]["predicted"].append(fvaw_t_pred)
+
+        fvbps_pred = first_volley_bps_weighted_accuracy_metric.get_final_scores()[robot_name]
+        errors["First Volley BPS Weighted Accuracy Hits Error"].append(calculate_error(fvbps_pred, actual_hits))
+        actual_values["First Volley BPS Weighted Accuracy Hits Error"]["actual"].append(actual_hits)
+        actual_values["First Volley BPS Weighted Accuracy Hits Error"]["predicted"].append(fvbps_pred)
+
+        fvbps_t_pred = first_volley_bps_weighted_accuracy_tournament_metric.get_final_scores()[robot_name]
+        errors["First Volley BPS Weighted Accuracy (Tournament) Hits Error"].append(calculate_error(fvbps_t_pred, actual_hits))
+        actual_values["First Volley BPS Weighted Accuracy (Tournament) Hits Error"]["actual"].append(actual_hits)
+        actual_values["First Volley BPS Weighted Accuracy (Tournament) Hits Error"]["predicted"].append(fvbps_t_pred)
+
+    return errors, actual_values
 
 def run_full_simulation_suite(robot_getter, suite_label):
     aggregated_errors = {
@@ -196,6 +268,22 @@ def run_full_simulation_suite(robot_getter, suite_label):
         "First Volley BPS Weighted Accuracy (Tournament) Hits Error": []
     }
 
+    aggregated_actual_values = {
+        "Magazine Size Hits Error": {"actual": [], "predicted": []},
+        "Max Fire Rate Hits Error": {"actual": [], "predicted": []},
+        "First Volley Hits Error": {"actual": [], "predicted": []},
+        "OPR": {"actual": [], "predicted": []},
+        "Weight Based + Max Fire Rate (Magazine) Hits Error": {"actual": [], "predicted": []},
+        "Weight Based (Magazine) Hits Error": {"actual": [], "predicted": []},
+        "Weight Based (First Volley) Hits Error": {"actual": [], "predicted": []},
+        "First Volley Accuracy Weight Hits Error": {"actual": [], "predicted": []},
+        "Magazine Size Shots Error": {"actual": [], "predicted": []},
+        "First Volley Shots Error": {"actual": [], "predicted": []},
+        "First Volley Accuracy Weight (Tournament) Hits Error": {"actual": [], "predicted": []},
+        "First Volley BPS Weighted Accuracy Hits Error": {"actual": [], "predicted": []},
+        "First Volley BPS Weighted Accuracy (Tournament) Hits Error": {"actual": [], "predicted": []}
+    }
+
     all_robots = robot_getter()
 
     print(f"\nStarting {suite_label} with {NUMBER_OF_RUNS} runs...")
@@ -204,21 +292,29 @@ def run_full_simulation_suite(robot_getter, suite_label):
         if (i+1) % 5 == 0 or i == 0:
             print(f"Run {i + 1} / {NUMBER_OF_RUNS}")
 
-        run_errors = run_simulation(all_robots)
+        run_errors, run_actual_values = run_simulation(all_robots)
 
         for metric, error_list in run_errors.items():
             aggregated_errors[metric].extend(error_list)
 
-    return aggregated_errors
+        for metric, values in run_actual_values.items():
+            aggregated_actual_values[metric]["actual"].extend(values["actual"])
+            aggregated_actual_values[metric]["predicted"].extend(values["predicted"])
 
-def print_suite_results(stats, suite_label):
+    return aggregated_errors, aggregated_actual_values
+
+def print_suite_results(stats, actual_values, suite_label):
     print(f"\n\n{'='*30} {suite_label} RESULTS {'='*30}\n")
     # Calculate stats for each metric
-    headers = ["Metric", "Mean", "Median", "Std Dev", "Min", "Max", "Bias"]
+    headers = ["Metric", "Mean", "Median", "Std Dev", "Min", "Max", "Bias", "Avg Scored", "Median Scored", "Avg Predicted", "Median Predicted", "Real Min", "Real Max"]
     rows = []
 
     for metric, errors in stats.items():
         summary = calculate_summary_statistics(errors)
+        actual_stats = calculate_actual_statistics(
+            actual_values[metric]["actual"],
+            actual_values[metric]["predicted"]
+        )
         row = [
             metric,
             f"{summary['Mean']:.2f}%",
@@ -226,7 +322,13 @@ def print_suite_results(stats, suite_label):
             f"{summary['Std Dev']:.2f}%",
             f"{summary['Min']:.2f}%",
             f"{summary['Max']:.2f}%",
-            f"{summary['Bias']:.2f}%"
+            f"{summary['Bias']:.2f}%",
+            f"{actual_stats['Avg Scored']:.2f}",
+            f"{actual_stats['Median Scored']:.2f}",
+            f"{actual_stats['Avg Predicted']:.2f}",
+            f"{actual_stats['Median Predicted']:.2f}",
+            f"{actual_stats['Real Min']:.2f}",
+            f"{actual_stats['Real Max']:.2f}"
         ]
         rows.append(row)
 
@@ -253,11 +355,11 @@ def main():
     print(f"Iterations: {ITERATIONS}")
     print("-" * 40)
 
-    time_based_stats = run_full_simulation_suite(get_time_based_robots, "TIME BASED ROBOT CONFIGS")
-    magazine_stats = run_full_simulation_suite(get_magazine_robots, "MAGAZINE SIZE BASED ROBOT CONFIGS")
+    time_based_stats, time_based_actual = run_full_simulation_suite(get_time_based_robots, "TIME BASED ROBOT CONFIGS")
+    magazine_stats, magazine_actual = run_full_simulation_suite(get_magazine_robots, "MAGAZINE SIZE BASED ROBOT CONFIGS")
 
-    print_suite_results(time_based_stats, "TIME BASED ROBOT CONFIGS")
-    print_suite_results(magazine_stats, "MAGAZINE SIZE BASED ROBOT CONFIGS")
+    print_suite_results(time_based_stats, time_based_actual, "TIME BASED ROBOT CONFIGS")
+    print_suite_results(magazine_stats, magazine_actual, "MAGAZINE SIZE BASED ROBOT CONFIGS")
 
 if __name__ == "__main__":
     main()
