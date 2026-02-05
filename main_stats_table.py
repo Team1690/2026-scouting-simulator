@@ -328,9 +328,18 @@ def print_suite_results(stats, actual_values, suite_label):
             f"{actual_stats['Avg Predicted']:.2f}",
             f"{actual_stats['Median Predicted']:.2f}",
             f"{actual_stats['Real Min']:.2f}",
-            f"{actual_stats['Real Max']:.2f}"
+            f"{actual_stats['Real Max']:.2f}",
+            summary['Median']  # Store raw median value for sorting
         ]
         rows.append(row)
+
+    # Sort rows by median error (index 13, which is the raw median value)
+    rows.sort(key=lambda x: x[13])
+
+    # Remove the raw median value used for sorting
+    for row in rows:
+        row.pop()
+
 
     # Simple table formatting
     # Calculate column widths
