@@ -1,81 +1,213 @@
-# 2026 Fuel Scouting Sim
+# FRC 2026 Scouting Simulation
 
-**Fuel Scouting Simulation**
-In one line it is: A playground where we simulate robots shooting fuel and see how accurate our scouting data actually is.
+## Overview
 
-## What is the Point?
-In the 2026 FRC game there are 400-600 fuel's (balls) per match and each robot shoots around 100-300 fuels per match (estimates before the season started so this could be off). Since we don't want scouters to manually count every single shot we created this simulation to test different methods of calculating how much fuel a robot shot and how many hits it scored and see if there is a method we can use to make it easier for the scouters.
+This simulation is designed to test different scouting methods for tracking robot shooting performance in FRC 2026. The goal is to find the most accurate and practical method for scouters to estimate how many fuel balls a robot shoots and hits during a match, without having to manually count 100-300 shots per robot.
 
-We simulate a "real" FRC tournament with 24 robots, each with a unique firing pattern based on mathematical equations. The matchmaking is based on the real FRC scheduling algorithm, ensuring realistic match distributions.
+## Simulation Architecture
 
-**This simulation was created with 3 main goals:**
-    1. Find the accuracy of each method
-    2. Find the best method
-    3. Find the method we can stack
+### Core Components
 
-## How It Works?
+#### 1. **Robot Models** (`robot_model.py`)
+Each robot is defined with the following characteristics:
+- **Magazine Size**: Total fuel capacity (20-60 balls)
+- **Accuracy**: Shot accuracy percentage (50-95%)
+- **Firing Rate Function**: Dynamic function determining how fast the robot shoots
+- **Maximum Fire Rate**: Physical limit on how fast the robot can shoot (balls per second)
 
-**Robot Creation**
-Now features TWO sets of 24 unique robots (48 total configs) to test different behaviors:
-1. **Time Based Robots**: The original set. Firing patterns are pure functions of time (e.g. shot rate increases as time goes on).
-2. **Magazine Size Based Robots**: New set. Firing patterns depend on how full the magazine is (e.g. shoots faster when full, slower when empty).
+#### 2. **Robot Configurations**
+The simulation includes **48 unique robot configurations** split into two sets:
 
-Each robot has:
-- Magazine size (fuel capacity)
-- Firing rate function (dynamic shot patterns)
-- Accuracy percentage
-- Maximum fire rate
+**Time-Based Robots** (`robot_configs.py` + `fire_rate_functions.py`):
+- 24 robots whose firing patterns are functions of time
+- The fire rate changes depending on how long the robot has been shooting.
 
-**Match Scheduling**
-Matches are scheduled using the official FRC algorithm. Each match has 6 robots (3 red alliance, 3 blue alliance) with minimized repeat pairings.
+**Magazine-Based Robots** (`robot_configs_magazine_size.py` + `magazine_size_fire_rate_functions.py`):
+- 24 robots whose firing patterns depend on magazine fill percentage
+- The fire rate changes depending on how much fuel is remaining in the magazine.
 
-**Match Simulation**
-During each match robots perform 1-6 volleys (randomly chosen) with realistic fuel loads (10-100% of their magazine capacity). // 10-100% to avoide the 0 case and realisticly robots dont shoot when they got less then 10% of their magazine.
+#### 3. **Match Scheduling** (`match_maker.py`)
+- Uses the official FRC scheduling algorithm
+- Creates balanced matches with 6 robots (3 red, 3 blue)
+- Minimizes repeat pairings between robots
+- Configurable matches per robot (default: 10 matches)
 
-## Scouting Metrics (Scouting Methods):
+#### 4. **Match Simulation** (`simulation_logic.py`)
+Each match simulates realistic robot behavior:
+- Robots perform 1-6 volleys (randomly chosen)
+- Each volley uses 10-100% of magazine capacity
+- Physics simulation with configurable time steps (default: 0.05 seconds)
 
-### 1. **Magazine Size Bucket Metric (Oz’s method)**
-Instead of entering an exact number of total balls fired the scouter selects the closest magazine size bucket: 25%, 50%, 75%, or 100%.
+#### 5. **Scouter Model** (`scouter_model.py`)
+Simulates human scouter observations with realistic errors:
+- **Time Error**: -25% to +175% (scouters struggle with timing precision)
+- **Magazine Count Error**: ±10% (visual estimation of magazine fill)
+- Applies variance to match-by-match observations
 
-### 2. **Iterative Average Fire Rate**
-Takes the alliance score and divides it between the 3 robots. based on their firing time If a robots calculated fire rate goes over their max fire rate it takes half of their score and adds it to their alliance partners (evenly split between the two). This keeps iterating until all scores are realistic. Then it averages these fire rates across all matches to predict each robots performance.
+## Simulation Parameters
 
-### 3. **OPR**
-used in the FIRST community to compare the performance of teams on the field. read more on the blue team alliance blog.
+Key configurable parameters in `parameters.py`:
 
-### 4. **Match Average Rate (Fixed Window)**
-After the first match, calculates the robots score rate (hits/time). Then in future matches uses that saved rate multiplied by the observed time to estimate total hits. basically assumes the robot will maintain the same fire rate it showed in its first match.
+| Parameter | Defualt Value | Description |
+|-----------|-------|-------------|
+| `NUMBER_OF_RUNS` | 25 | How many full tournaments to simulate |
+| `MATCHES_PER_ROBOT` | 10 | Matches each robot plays per tournament |
+| `ITERATIONS` | 10,000 | Match scheduling algorithm iterations |
+| `MIN_ACCURACY` | 0.50 | Minimum robot accuracy (50%) |
+| `MAX_ACCURACY` | 0.95 | Maximum robot accuracy (95%) |
+| `MATCH_ACCURACY_VARIANCE` | 0.1 | Match-to-match accuracy variation (±10%) |
+| `SCOUT_MIN_TIME_ERROR` | -0.25 | Minimum time observation error (-25%) |
+| `SCOUT_MAX_TIME_ERROR` | 1.75 | Maximum time observation error (+175%) |
+| `SCOUT_MAGAZINE_ERROR` | 0.1 | Magazine observation error margin (±10%) |
+| `SIMULATION_TIME_STEP` | 0.05 | Physics simulation time step (seconds) |
 
-### 5. **Volley Average Rate (Fixed Window)**
-Similar to method 4 (Match Average Rate) but uses only the first volley instead of the full first match. Takes the fire rate from the very first volley (shots/time not hits/time) and applies it to all future volleys and matches.
+## Tested Scouting Metrics
 
-### 6. **Weight Based Metric**
-Takes the total alliance hits and distributes them back to individual robots weighted by their "scouted shots" (how many shots were scouted using the magazine method). Basically, if we saw Robot A take 70% of the shots, we give them 70% of the hits.
+The simulation tests **13 different scouting methods** to see which predicts robot performance most accurately:
 
-### 7. **Weight Based Metric (Max Fire Rate Cap)**
-Same as the standard Weight Based Metric, but with a sanity check: a robot cannot have hit more balls than it could physically fire in that time (Max Fire Rate * Time). If a robot gets too many hits assigned, we cap it and redistribute the extra hits to the other robots.
+- First Volley Accuracy Weight Hits Error
+- First Volley BPS Weighted Accuracy Hits Error
+- Weight Based (Magazine) Hits Error
+- First Volley Accuracy Weight (Tournament) Hits Error
+- Weight Based + Max Fire Rate (Magazine) Hits Error
+- Weight Based (First Volley) Hits Error
+- Max Fire Rate Hits Error
+- First Volley BPS Weighted Accuracy (Tournament) Hits Error
+- OPR
+- Magazine Size Hits Error
+- First Volley Hits Error
 
-### 8. **Weight Based Metric (First Volley)**
-Similar to the standard Weight Based Metric, but uses the *First Volley* fire rate to predict the scouted shots instead of using the magazine method to count shots.
+## Error Calculation
+
+Error is calculated as **percentage error**:
+
+```
+Error = 100 × (Observed - Actual) / Actual
+```
+
+For each metric, the simulation reports:
+- **Mean (MAE)**: Mean Absolute Error - average prediction accuracy
+- **Median**: Middle value of all errors
+- **Std Dev**: How much errors vary
+- **Min/Max**: Best and worst predictions
+- **Bias**: Mean Signed Error - shows if metric consistently over/underestimates
+
+> **Positive Bias**: Metric overestimates performance
+> **Negative Bias**: Metric underestimates performance
+
+## Simulation Flow
+
+### Process
+
+```mermaid
+graph TD
+    A[Initialize 24 Robots] --> B[Schedule Matches]
+    B --> C[Simulate Match]
+    C --> D[Scout Robot with Errors]
+    D --> E[Calculate All Metrics]
+    E --> F{More Matches?}
+    F -->|Yes| C
+    F -->|No| G[Calculate Errors]
+    G --> H{More Runs?}
+    H -->|Yes| B
+    H -->|No| I[Aggregate Statistics]
+    I --> J[Print Results]
+```
+
+### Detailed Match Simulation
+
+1. **Match Setup**: Select 6 robots (3 red, 3 blue)
+2. **For Each Robot**:
+   - Randomly choose number of volleys (1-6)
+   - For each volley:
+     - Randomly choose magazine fill percentage (10-100%)
+     - Calculate shots based on firing rate function
+     - Apply accuracy to determine hits vs. misses
+     - Track timing and statistics
+3. **Apply Scouter Errors**:
+   - Add time observation errors
+   - Add magazine count errors
+   - Apply match-to-match variance
+4. **Calculate Metrics**: Run all 13 scouting methods
+5. **Record Results**: Store for error analysis
+
+### Per-Run Statistics
+
+For each of the 500 simulation runs:
+- Create new match schedule
+- Reset all metric trackers
+- Simulate all scheduled matches
+- Calculate prediction errors for all robots
+- Aggregate errors across all robots
+
+### Final Aggregation
+
+After 500 runs:
+- Combine all error measurements (500 runs × 24 robots = 12,000 data points per metric)
+- Calculate summary statistics (mean, median, std dev, min, max, bias)
+- Compare metrics side-by-side
+
+## Key Design Decisions
+
+### Why Per Volley Variance?
+
+Robots don't perform identically every match:
+- Driver skill varies
+- Defense affects performance
+- Field conditions change
+- 10% variance simulates this reality
+
+### Why Scouter Errors?
+
+Human observations are imperfect:
+- Timing is hard to judge (especially with multiple robots)
+- Magazine fill is estimated visually
+- Scouters get tired and lose focus
+- Errors reflect real scouting conditions
+
+## Output Interpretation
 
 
-### Files Descriptions
+### Comparing Metrics
 
-- **`main.py`**: same as main.py for most project, its the main file that runs the simulation
-- **`robot_model.py`**: defines the `RobotModel` class (the robot)
-- **`robot_configs.py`**: the 24 time-based robot configurations
-- **`robot_configs_magazine_size.py`**: the 24 magazine-size-based robot configurations
-- **`fire_rate_functions.py`**: contains the time-based firing rate functions
-- **`magazine_size_fire_rate_functions.py`**: contains the magazine-based firing rate functions
-- **`simulation_logic.py`**: implements the `scout_robot_match()` function (the match simulation)
-- **`match_maker.py`**: frc scheduling algorithm to create balanced match schedules
-- **`metrics.py`**: contains the different scouting metrics
-- **`utils.py`**: utility functions (it has just the error calculations)
+**Lower is better** for:
+- Mean (more accurate on average)
+- Median (better typical performance)
+- Std Dev (more consistent)
+- Min/Max range (more reliable)
 
-## Fire Rate Functions Visualization
-To visualize the different robots firing patterns check out these folders:
-- **`time based functions png's`**: Contains summary pages for the time-based robots.
-- **`magazine size based functions png's`**: Contains summary pages for the magazine-based robots.
+**Bias near zero is better**:
+- Means metric is balanced (not systematically wrong)
+- Can be corrected if consistent
 
-## disclaimer
-the code is highly unoptimized and unreadable. Good luck.
+## Technical Limitations
+
+### Known Issues
+1. **Performance**: Simulation is unoptimized (500 runs × 10 matches × 24 robots takes several minutes)
+2. **Code Quality**: Acknowledged as "highly unoptimized and unreadable" (see README disclaimer)
+3. **No Defense**: Simulation doesn't model defensive actions affecting fire rates
+4. **No Strategy**: Doesn't model strategic decisions (when to shoot, when to collect)
+
+### Assumptions
+- Robots always shoot when they can (no strategic holding)
+- Accuracy is consistent within ±10% variance
+- Scouters observe all volleys (no missing data)
+- Magazine refills happen instantly
+- No mechanical failures
+
+## File Reference
+
+| File | Purpose |
+|------|---------|
+| `main.py` | Orchestrates simulation runs and result aggregation |
+| `parameters.py` | All configurable simulation constants |
+| `robot_model.py` | Robot class definition |
+| `robot_configs.py` | 24 time-based robot configurations |
+| `robot_configs_magazine_size.py` | 24 magazine-based robot configurations |
+| `fire_rate_functions.py` | Time-based firing rate functions |
+| `magazine_size_fire_rate_functions.py` | Magazine-based firing rate functions |
+| `simulation_logic.py` | Match simulation and scouting logic |
+| `match_maker.py` | FRC scheduling algorithm implementation |
+| `scouter_model.py` | Scouter observation error model |
+| `metrics.py` | All 13 scouting metric implementations |
+| `utils.py` | Error calculation utilities |
