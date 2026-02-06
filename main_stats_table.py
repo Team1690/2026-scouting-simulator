@@ -32,10 +32,9 @@ def calculate_summary_statistics(data):
     }
 
 def calculate_actual_statistics(actual_list, predicted_list):
-    """Calculate statistics for actual values (not percentages)."""
     if not actual_list or not predicted_list:
         return {
-            "Avg Scored": 0.0, "Median Scored": 0.0, "Avg Predicted": 0.0, "Median Predicted": 0.0, "Real Min": 0.0, "Real Max": 0.0
+            "Avg Scored": 0.0, "Median Scored": 0.0, "Avg Predicted": 0.0, "Median Predicted": 0.0, "Real Min": 0.0, "Real Max": 0.0, "Pred Min": 0.0, "Pred Max": 0.0
         }
 
     return {
@@ -44,7 +43,9 @@ def calculate_actual_statistics(actual_list, predicted_list):
         "Avg Predicted": np.mean(predicted_list),
         "Median Predicted": np.median(predicted_list),
         "Real Min": np.min(actual_list),
-        "Real Max": np.max(actual_list)
+        "Real Max": np.max(actual_list),
+        "Pred Min": np.min(predicted_list),
+        "Pred Max": np.max(predicted_list)
     }
 
 def run_simulation(all_robots):
@@ -214,40 +215,40 @@ def run_simulation(all_robots):
         actual_values["OPR"]["predicted"].append(opr_value)
 
         # Weight Based Metrics
-        wb_max_fr_pred = weight_based_max_fire_rate_metric.get_final_scores()[robot_name]
-        errors["Weight Based + Max Fire Rate (Magazine) Hits Error"].append(calculate_error(wb_max_fr_pred, actual_hits))
+        weight_based_max_fire_rate_prediction = weight_based_max_fire_rate_metric.get_final_scores()[robot_name]
+        errors["Weight Based + Max Fire Rate (Magazine) Hits Error"].append(calculate_error(weight_based_max_fire_rate_prediction, actual_hits))
         actual_values["Weight Based + Max Fire Rate (Magazine) Hits Error"]["actual"].append(actual_hits)
-        actual_values["Weight Based + Max Fire Rate (Magazine) Hits Error"]["predicted"].append(wb_max_fr_pred)
+        actual_values["Weight Based + Max Fire Rate (Magazine) Hits Error"]["predicted"].append(weight_based_max_fire_rate_prediction)
 
-        wb_pred = weight_based_metric.get_final_scores()[robot_name]
-        errors["Weight Based (Magazine) Hits Error"].append(calculate_error(wb_pred, actual_hits))
+        weight_based_prediction = weight_based_metric.get_final_scores()[robot_name]
+        errors["Weight Based (Magazine) Hits Error"].append(calculate_error(weight_based_prediction, actual_hits))
         actual_values["Weight Based (Magazine) Hits Error"]["actual"].append(actual_hits)
-        actual_values["Weight Based (Magazine) Hits Error"]["predicted"].append(wb_pred)
+        actual_values["Weight Based (Magazine) Hits Error"]["predicted"].append(weight_based_prediction)
 
-        wb_fv_pred = weight_based_first_volley_metric.get_final_scores()[robot_name]
-        errors["Weight Based (First Volley) Hits Error"].append(calculate_error(wb_fv_pred, actual_hits))
+        weight_based_first_volley_prediction = weight_based_first_volley_metric.get_final_scores()[robot_name]
+        errors["Weight Based (First Volley) Hits Error"].append(calculate_error(weight_based_first_volley_prediction, actual_hits))
         actual_values["Weight Based (First Volley) Hits Error"]["actual"].append(actual_hits)
-        actual_values["Weight Based (First Volley) Hits Error"]["predicted"].append(wb_fv_pred)
+        actual_values["Weight Based (First Volley) Hits Error"]["predicted"].append(weight_based_first_volley_prediction)
 
-        fvaw_pred = first_volley_accuracy_weight_metric.get_final_scores()[robot_name]
-        errors["First Volley Accuracy Weight Hits Error"].append(calculate_error(fvaw_pred, actual_hits))
+        first_volley_accuracy_weight_prediction = first_volley_accuracy_weight_metric.get_final_scores()[robot_name]
+        errors["First Volley Accuracy Weight Hits Error"].append(calculate_error(first_volley_accuracy_weight_prediction, actual_hits))
         actual_values["First Volley Accuracy Weight Hits Error"]["actual"].append(actual_hits)
-        actual_values["First Volley Accuracy Weight Hits Error"]["predicted"].append(fvaw_pred)
+        actual_values["First Volley Accuracy Weight Hits Error"]["predicted"].append(first_volley_accuracy_weight_prediction)
 
-        fvaw_t_pred = first_volley_accuracy_weight_metric_tournament.get_final_scores()[robot_name]
-        errors["First Volley Accuracy Weight (Tournament) Hits Error"].append(calculate_error(fvaw_t_pred, actual_hits))
+        first_volley_accuracy_weight_tournament_prediction = first_volley_accuracy_weight_metric_tournament.get_final_scores()[robot_name]
+        errors["First Volley Accuracy Weight (Tournament) Hits Error"].append(calculate_error(first_volley_accuracy_weight_tournament_prediction, actual_hits))
         actual_values["First Volley Accuracy Weight (Tournament) Hits Error"]["actual"].append(actual_hits)
-        actual_values["First Volley Accuracy Weight (Tournament) Hits Error"]["predicted"].append(fvaw_t_pred)
+        actual_values["First Volley Accuracy Weight (Tournament) Hits Error"]["predicted"].append(first_volley_accuracy_weight_tournament_prediction)
 
-        fvbps_pred = first_volley_bps_weighted_accuracy_metric.get_final_scores()[robot_name]
-        errors["First Volley BPS Weighted Accuracy Hits Error"].append(calculate_error(fvbps_pred, actual_hits))
+        first_volley_bps_weighted_accuracy_prediction = first_volley_bps_weighted_accuracy_metric.get_final_scores()[robot_name]
+        errors["First Volley BPS Weighted Accuracy Hits Error"].append(calculate_error(first_volley_bps_weighted_accuracy_prediction, actual_hits))
         actual_values["First Volley BPS Weighted Accuracy Hits Error"]["actual"].append(actual_hits)
-        actual_values["First Volley BPS Weighted Accuracy Hits Error"]["predicted"].append(fvbps_pred)
+        actual_values["First Volley BPS Weighted Accuracy Hits Error"]["predicted"].append(first_volley_bps_weighted_accuracy_prediction)
 
-        fvbps_t_pred = first_volley_bps_weighted_accuracy_tournament_metric.get_final_scores()[robot_name]
-        errors["First Volley BPS Weighted Accuracy (Tournament) Hits Error"].append(calculate_error(fvbps_t_pred, actual_hits))
+        first_volley_bps_weighted_accuracy_tournament_prediction = first_volley_bps_weighted_accuracy_tournament_metric.get_final_scores()[robot_name]
+        errors["First Volley BPS Weighted Accuracy (Tournament) Hits Error"].append(calculate_error(first_volley_bps_weighted_accuracy_tournament_prediction, actual_hits))
         actual_values["First Volley BPS Weighted Accuracy (Tournament) Hits Error"]["actual"].append(actual_hits)
-        actual_values["First Volley BPS Weighted Accuracy (Tournament) Hits Error"]["predicted"].append(fvbps_t_pred)
+        actual_values["First Volley BPS Weighted Accuracy (Tournament) Hits Error"]["predicted"].append(first_volley_bps_weighted_accuracy_tournament_prediction)
 
     return errors, actual_values
 
@@ -303,11 +304,24 @@ def run_full_simulation_suite(robot_getter, suite_label):
 
     return aggregated_errors, aggregated_actual_values
 
+def print_table(headers, rows):
+    col_widths = [len(h) for h in headers]
+    for row in rows:
+        for i, cell in enumerate(row):
+            col_widths[i] = max(col_widths[i], len(str(cell)))
+
+    header_row = " | ".join(f"{h:<{col_widths[i]}}" for i, h in enumerate(headers))
+    print(header_row)
+    print("-" * len(header_row))
+
+    for row in rows:
+        print(" | ".join(f"{str(cell):<{col_widths[i]}}" for i, cell in enumerate(row)))
+
 def print_suite_results(stats, actual_values, suite_label):
     print(f"\n\n{'='*30} {suite_label} RESULTS {'='*30}\n")
-    # Calculate stats for each metric
-    headers = ["Metric", "Mean", "Median", "Std Dev", "Min", "Max", "Bias", "Avg Scored", "Median Scored", "Avg Predicted", "Median Predicted", "Real Min", "Real Max"]
-    rows = []
+
+    error_rows = []
+    actual_rows = []
 
     for metric, errors in stats.items():
         summary = calculate_summary_statistics(errors)
@@ -315,7 +329,8 @@ def print_suite_results(stats, actual_values, suite_label):
             actual_values[metric]["actual"],
             actual_values[metric]["predicted"]
         )
-        row = [
+
+        error_row = [
             metric,
             f"{summary['Mean']:.2f}%",
             f"{summary['Median']:.2f}%",
@@ -323,39 +338,44 @@ def print_suite_results(stats, actual_values, suite_label):
             f"{summary['Min']:.2f}%",
             f"{summary['Max']:.2f}%",
             f"{summary['Bias']:.2f}%",
+            summary['Median']  # For sorting
+        ]
+        error_rows.append(error_row)
+
+        actual_row = [
+            metric,
             f"{actual_stats['Avg Scored']:.2f}",
             f"{actual_stats['Median Scored']:.2f}",
             f"{actual_stats['Avg Predicted']:.2f}",
             f"{actual_stats['Median Predicted']:.2f}",
             f"{actual_stats['Real Min']:.2f}",
             f"{actual_stats['Real Max']:.2f}",
-            summary['Median']  # Store raw median value for sorting
+            f"{actual_stats['Pred Min']:.2f}",
+            f"{actual_stats['Pred Max']:.2f}",
+            summary['Median']  # For sorting (same order as error table)
         ]
-        rows.append(row)
+        actual_rows.append(actual_row)
 
-    # Sort rows by median error (index 13, which is the raw median value)
-    rows.sort(key=lambda x: x[13])
+    # Sort both tables by median error
+    error_rows.sort(key=lambda x: x[-1])
+    actual_rows.sort(key=lambda x: x[-1])
 
-    # Remove the raw median value used for sorting
-    for row in rows:
+    # Remove the sorting key from rows
+    for row in error_rows:
+        row.pop()
+    for row in actual_rows:
         row.pop()
 
+    # there was a print isscue and deviding it into two tables fixed it
+    # Print Table 1: Error Statistics
+    print("--- Error Statistics ---\n")
+    error_headers = ["Metric", "Mean", "Median", "Std Dev", "Min", "Max", "Bias"]
+    print_table(error_headers, error_rows)
 
-    # Simple table formatting
-    # Calculate column widths
-    col_widths = [len(h) for h in headers]
-    for row in rows:
-        for i, cell in enumerate(row):
-            col_widths[i] = max(col_widths[i], len(cell))
-
-    # Print headers
-    header_row = " | ".join(f"{h:<{col_widths[i]}}" for i, h in enumerate(headers))
-    print(header_row)
-    print("-" * len(header_row))
-
-    # Print rows
-    for row in rows:
-        print(" | ".join(f"{cell:<{col_widths[i]}}" for i, cell in enumerate(row)))
+    # Print Table 2: Actual Value Statistics
+    print("\n--- Actual Value Statistics ---\n")
+    actual_headers = ["Metric", "Avg Scored", "Median Scored", "Avg Predicted", "Median Predicted", "Real Min", "Real Max", "Pred Min", "Pred Max"]
+    print_table(actual_headers, actual_rows)
 
 def main():
     print(f"Running simulation with:")

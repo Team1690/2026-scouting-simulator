@@ -1,7 +1,7 @@
 from robot_model import RobotModel
 import math
 import random
-from tqdm import tqdm
+
 
 class Match:
     def __init__(self, red_alliance: tuple[RobotModel, RobotModel, RobotModel], blue_alliance: tuple[RobotModel, RobotModel, RobotModel]):
@@ -17,7 +17,7 @@ def make_matches(robots: list[RobotModel], matches_per_robot: int, iterations: i
     best_scheduled_score = 0
     best_matches: list[Match] = []
 
-    for iteration in tqdm(range(iterations)):
+    for iteration in range(iterations):
         matches: list[Match] = []
 
         for _ in range(matches_per_robot):

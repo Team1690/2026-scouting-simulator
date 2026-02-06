@@ -1,8 +1,8 @@
 
-NUMBER_OF_RUNS = 5
+NUMBER_OF_RUNS = 1000
 
 MATCHES_PER_ROBOT = 10
-ITERATIONS = 5000 # Iterations of match making
+ITERATIONS = 2000 # Iterations of match making
 
 MIN_ACCURACY = 0.50
 MAX_ACCURACY = 0.95
