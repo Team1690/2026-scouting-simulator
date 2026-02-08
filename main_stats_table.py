@@ -49,7 +49,8 @@ def calculate_actual_statistics(actual_list, predicted_list, error_list):
         "Real Min": actual_list[min_error_idx],
         "Real Max": actual_list[max_error_idx],
         "Pred Min": predicted_list[min_error_idx],
-        "Pred Max": predicted_list[max_error_idx]
+        "Pred Max": predicted_list[max_error_idx],
+        "Avg Abs Error": np.mean(np.abs(np.array(actual_list) - np.array(predicted_list)))
     }
 
 def run_simulation(all_robots):
@@ -353,6 +354,7 @@ def print_suite_results(stats, actual_values, suite_label):
             f"{actual_stats['Median Scored']:.2f}",
             f"{actual_stats['Avg Predicted']:.2f}",
             f"{actual_stats['Median Predicted']:.2f}",
+            f"{actual_stats['Avg Abs Error']:.2f}",
             f"{actual_stats['Real Min']:.2f}",
             f"{actual_stats['Real Max']:.2f}",
             f"{actual_stats['Pred Min']:.2f}",
@@ -379,7 +381,7 @@ def print_suite_results(stats, actual_values, suite_label):
 
     # Print Table 2: Actual Value Statistics
     print("\n--- Actual Value Statistics ---\n")
-    actual_headers = ["Metric", "Avg Scored", "Median Scored", "Avg Predicted", "Median Predicted", "Real Min", "Real Max", "Pred Min", "Pred Max"]
+    actual_headers = ["Metric", "Avg Scored", "Median Scored", "Avg Predicted", "Median Predicted", "Avg Abs Error", "Real Min", "Real Max", "Pred Min", "Pred Max"]
     print_table(actual_headers, actual_rows)
 
 def main():
