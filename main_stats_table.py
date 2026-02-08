@@ -31,21 +31,25 @@ def calculate_summary_statistics(data):
         "Bias": np.mean(data)
     }
 
-def calculate_actual_statistics(actual_list, predicted_list):
-    if not actual_list or not predicted_list:
+def calculate_actual_statistics(actual_list, predicted_list, error_list):
+    if not actual_list or not predicted_list or not error_list:
         return {
             "Avg Scored": 0.0, "Median Scored": 0.0, "Avg Predicted": 0.0, "Median Predicted": 0.0, "Real Min": 0.0, "Real Max": 0.0, "Pred Min": 0.0, "Pred Max": 0.0
         }
+
+    abs_errors = np.abs(error_list)
+    min_error_idx = np.argmin(abs_errors)
+    max_error_idx = np.argmax(abs_errors)
 
     return {
         "Avg Scored": np.mean(actual_list),
         "Median Scored": np.median(actual_list),
         "Avg Predicted": np.mean(predicted_list),
         "Median Predicted": np.median(predicted_list),
-        "Real Min": np.min(actual_list),
-        "Real Max": np.max(actual_list),
-        "Pred Min": np.min(predicted_list),
-        "Pred Max": np.max(predicted_list)
+        "Real Min": actual_list[min_error_idx],
+        "Real Max": actual_list[max_error_idx],
+        "Pred Min": predicted_list[min_error_idx],
+        "Pred Max": predicted_list[max_error_idx]
     }
 
 def run_simulation(all_robots):
@@ -327,7 +331,8 @@ def print_suite_results(stats, actual_values, suite_label):
         summary = calculate_summary_statistics(errors)
         actual_stats = calculate_actual_statistics(
             actual_values[metric]["actual"],
-            actual_values[metric]["predicted"]
+            actual_values[metric]["predicted"],
+            errors
         )
 
         error_row = [
