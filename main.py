@@ -12,58 +12,22 @@ from utils import *
 from scouter_model import *
 from parameters import *
 
+def enabled(metric_name):
+    return metric_name in ENABLED_METRICS
+
 def run_full_simulation_suite(robot_getter, suite_label):
-    total_avg_magazine_error = 0
-    total_avg_fire_rate_error = 0
-    total_avg_volley_error = 0
-    total_avg_opr_error = 0
-    total_avg_weight_based_max_fire_rate_error = 0
-    total_avg_weight_based_error = 0
-    total_avg_weight_based_first_volley_error = 0
-    total_avg_magazine_shots_error = 0
-    total_avg_volley_shots_error = 0
-    total_avg_first_volley_accuracy_weight_error = 0
-    total_avg_first_volley_accuracy_weight_error = 0
-    total_avg_first_volley_accuracy_weight_tournament_error = 0
-    total_avg_first_volley_bps_weighted_accuracy_error = 0
-    total_avg_first_volley_bps_weighted_accuracy_tournament_error = 0
-    total_avg_fire_time_weight_error = 0
+    totals = {}
 
     all_robots = robot_getter()
 
     for i in range(NUMBER_OF_RUNS):
         print(f"\n\nRUN {i + 1} / {NUMBER_OF_RUNS} \n\n")
-        avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error, avg_weight_based_max_fire_rate_error, avg_weight_based_error, avg_weight_based_first_volley_error, avg_first_volley_accuracy_weight_error, avg_magazine_shots_error, avg_volley_shots_error, avg_first_volley_accuracy_weight_tournament_error, avg_first_volley_bps_weighted_accuracy_error, avg_first_volley_bps_weighted_accuracy_tournament_error, avg_fire_time_weight_error = run_simulation(all_robots)
+        run_results = run_simulation(all_robots)
 
-        total_avg_magazine_error += avg_magazine_error
-        total_avg_fire_rate_error += avg_fire_rate_error
-        total_avg_volley_error += avg_volley_error
-        total_avg_opr_error += avg_opr_error
-        total_avg_weight_based_max_fire_rate_error += avg_weight_based_max_fire_rate_error
-        total_avg_weight_based_error += avg_weight_based_error
-        total_avg_weight_based_first_volley_error += avg_weight_based_first_volley_error
-        total_avg_magazine_shots_error += avg_magazine_shots_error
-        total_avg_volley_shots_error += avg_volley_shots_error
-        total_avg_first_volley_accuracy_weight_error += avg_first_volley_accuracy_weight_error
-        total_avg_first_volley_accuracy_weight_tournament_error += avg_first_volley_accuracy_weight_tournament_error
-        total_avg_first_volley_bps_weighted_accuracy_error += avg_first_volley_bps_weighted_accuracy_error
-        total_avg_first_volley_bps_weighted_accuracy_tournament_error += avg_first_volley_bps_weighted_accuracy_tournament_error
-        total_avg_fire_time_weight_error += avg_fire_time_weight_error
+        for key, value in run_results.items():
+            totals[key] = totals.get(key, 0) + value
 
-    return (total_avg_magazine_error / NUMBER_OF_RUNS,
-            total_avg_fire_rate_error / NUMBER_OF_RUNS,
-            total_avg_volley_error / NUMBER_OF_RUNS,
-            total_avg_opr_error / NUMBER_OF_RUNS,
-            total_avg_weight_based_max_fire_rate_error / NUMBER_OF_RUNS,
-            total_avg_weight_based_error / NUMBER_OF_RUNS,
-            total_avg_weight_based_first_volley_error / NUMBER_OF_RUNS,
-            total_avg_first_volley_accuracy_weight_error / NUMBER_OF_RUNS,
-            total_avg_magazine_shots_error / NUMBER_OF_RUNS,
-            total_avg_volley_shots_error / NUMBER_OF_RUNS,
-            total_avg_first_volley_accuracy_weight_tournament_error / NUMBER_OF_RUNS,
-            total_avg_first_volley_bps_weighted_accuracy_error / NUMBER_OF_RUNS,
-            total_avg_first_volley_bps_weighted_accuracy_tournament_error / NUMBER_OF_RUNS,
-            total_avg_fire_time_weight_error / NUMBER_OF_RUNS)
+    return {key: value / NUMBER_OF_RUNS for key, value in totals.items()}
 
 
 def run_simulation(all_robots):
@@ -72,26 +36,23 @@ def run_simulation(all_robots):
     match_results = []
 
     scout = ScouterModel(SCOUT_MIN_TIME_ERROR, SCOUT_MAX_TIME_ERROR, SCOUT_MAGAZINE_ERROR) # min_time_error, max_time_error, magazine_error
-    fire_rate_metric = IterativeAverageFireRateMetric(all_robots)
-    fixed_window_metric = MatchAvgRateFixedWindowMetric()
-    volley_avg_rate_fixed_window_metric = VolleyAvgRateFixedWindowMetric(all_robots)
-    opr = OPR(all_robots)
-    weight_based_max_fire_rate_metric = WeightBasedMaxFireRateMetric(all_robots)
-    weight_based_metric = WeightBasedMetric(all_robots)
-    weight_based_first_volley_metric = WeightBasedFirstVolleyMetric(all_robots)
-    first_volley_accuracy_weight_metric = FirstVolleyAccuracyWeightMetric(all_robots)
-    first_volley_accuracy_weight_metric_tournament = FirstVolleyAccuracyWeightMetricTournament(all_robots)
-    first_volley_bps_weighted_accuracy_metric = FirstVolleyBPSWeightedAccuracy(all_robots)
-    first_volley_bps_weighted_accuracy_tournament_metric = FirstVolleyBPSWeightedAccuracyTournament(all_robots)
-    fire_time_weight_metric = FireTimeWeightMetric(all_robots)
+
+    # Only instantiate enabled metrics
+    fire_rate_metric = IterativeAverageFireRateMetric(all_robots) if enabled("fire_rate") else None
+    fixed_window_metric = MatchAvgRateFixedWindowMetric() if enabled("fixed_window") else None
+    volley_avg_rate_fixed_window_metric = VolleyAvgRateFixedWindowMetric(all_robots) if enabled("volley_avg_rate") else None
+    opr = OPR(all_robots) if enabled("opr") else None
+    weight_based_max_fire_rate_metric = WeightBasedMaxFireRateMetric(all_robots) if enabled("weight_based_max_fire_rate") else None
+    weight_based_metric = WeightBasedMetric(all_robots) if enabled("weight_based") else None
+    weight_based_first_volley_metric = WeightBasedFirstVolleyMetric(all_robots) if enabled("weight_based_first_volley") else None
+    first_volley_accuracy_weight_metric = FirstVolleyAccuracyWeightMetric(all_robots) if enabled("first_volley_accuracy_weight") else None
+    first_volley_accuracy_weight_metric_tournament = FirstVolleyAccuracyWeightMetricTournament(all_robots) if enabled("first_volley_accuracy_weight_tournament") else None
+    first_volley_bps_weighted_accuracy_metric = FirstVolleyBPSWeightedAccuracy(all_robots) if enabled("first_volley_bps_weighted_accuracy") else None
+    first_volley_bps_weighted_accuracy_tournament_metric = FirstVolleyBPSWeightedAccuracyTournament(all_robots) if enabled("first_volley_bps_weighted_accuracy_tournament") else None
+    fire_time_weight_metric = FireTimeWeightMetric(all_robots) if enabled("fire_time_weight") else None
 
     notification_step = NOTIFICATION_STEP  # just to save console space where we can
     for i, match in enumerate(schedule): # enumerate takes a list and returns pairs of (index, value)
-        # if (i + 1) % notification_step == 0:
-        #     print("\n" + "=" * 80)
-        #     print(f" MATCH: {i + 1} | Red: {match.red_alliance} vs Blue: {match.blue_alliance}")
-        #     print("=" * 80)
-
         current_match_data = {
             "match_number": i + 1,
             "red_team_robots": [],
@@ -103,144 +64,109 @@ def run_simulation(all_robots):
         }
 
         # Red Team
-        # if (i + 1) % notification_step == 0: # check if the match number is a multiple of the notification step
-        #     print("\n[RED TEAM]")
         for robot in match.red_alliance:
             stats = scout_robot_match(robot, scout, MATCH_ACCURACY_VARIANCE)
             current_match_data["red_team_robots"].append(stats)
             current_match_data["red_team_hits"] += stats["total_hits"]
             current_match_data["red_team_shots"] += stats["total_shots"]
 
-            stats["AvgRateFixedWindow"] = fixed_window_metric.calculate_AvgRateFixedWindow(robot.name, stats["total_hits"], stats["total_fire_time"])
-            stats["VolleyAvgRate"] = volley_avg_rate_fixed_window_metric.calculate_volley_avg_rate_fixed_window(stats)
+            if fixed_window_metric:
+                stats["AvgRateFixedWindow"] = fixed_window_metric.calculate_AvgRateFixedWindow(robot.name, stats["total_hits"], stats["total_fire_time"])
+            else:
+                stats["AvgRateFixedWindow"] = 0
+            if volley_avg_rate_fixed_window_metric:
+                stats["VolleyAvgRate"] = volley_avg_rate_fixed_window_metric.calculate_volley_avg_rate_fixed_window(stats)
+            else:
+                stats["VolleyAvgRate"] = 0
 
-        robot_scores = fire_rate_metric.calculate_score_by_fire_rate(current_match_data["red_team_robots"], current_match_data["red_team_hits"], 10)
-        weight_based_max_fire_rate_metric.calculate_weight_based_max_fire_rate(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
-        weight_based_metric.calculate_weight_based_metric(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
-        weight_based_first_volley_metric.calculate_weight_based_first_volley_metric(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
-        first_volley_accuracy_weight_metric.calculate_first_volley_accuracy_weight(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
-        first_volley_accuracy_weight_metric_tournament.calculate_first_volley_accuracy_weight_tournament(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
-        first_volley_bps_weighted_accuracy_metric.calculate_first_volley_bps_weighted_accuracy(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
-        first_volley_bps_weighted_accuracy_tournament_metric.calculate_first_volley_bps_weighted_accuracy_tournament(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
-        fire_time_weight_metric.calculate_fire_time_weight(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
+        if fire_rate_metric:
+            robot_scores = fire_rate_metric.calculate_score_by_fire_rate(current_match_data["red_team_robots"], current_match_data["red_team_hits"], 10)
+        if weight_based_max_fire_rate_metric:
+            weight_based_max_fire_rate_metric.calculate_weight_based_max_fire_rate(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
+        if weight_based_metric:
+            weight_based_metric.calculate_weight_based_metric(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
+        if weight_based_first_volley_metric:
+            weight_based_first_volley_metric.calculate_weight_based_first_volley_metric(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
+        if first_volley_accuracy_weight_metric:
+            first_volley_accuracy_weight_metric.calculate_first_volley_accuracy_weight(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
+        if first_volley_accuracy_weight_metric_tournament:
+            first_volley_accuracy_weight_metric_tournament.calculate_first_volley_accuracy_weight_tournament(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
+        if first_volley_bps_weighted_accuracy_metric:
+            first_volley_bps_weighted_accuracy_metric.calculate_first_volley_bps_weighted_accuracy(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
+        if first_volley_bps_weighted_accuracy_tournament_metric:
+            first_volley_bps_weighted_accuracy_tournament_metric.calculate_first_volley_bps_weighted_accuracy_tournament(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
+        if fire_time_weight_metric:
+            fire_time_weight_metric.calculate_fire_time_weight(current_match_data["red_team_robots"], current_match_data["red_team_hits"])
 
         if (i + 1) % notification_step == 0:
-            # print(f"Total red team shots: {current_match_data['red_team_shots']}")
-            # print(f"Total red team hits: {current_match_data['red_team_hits']}")
-            # print("\n")
+            if fire_rate_metric:
+                total_score = sum(robot_scores.values())
 
-            # for robot_name in robot_scores:
-                # print(f"Scouted hits based on fire rate: {robot_scores[robot_name]:.2f} for {robot_name}")
-                # for current_match_robot_data in current_match_data["red_team_robots"]:
-                #     if current_match_robot_data["name"] == robot_name:
-                #         # print(f"Shots error rate based on fire rate: {calculate_error(robot_scores[robot_name], current_match_robot_data['total_shots']):.2f}%")
-                #         # print(f"Hits error rate based on fire rate: {calculate_error(robot_scores[robot_name], current_match_robot_data['total_hits']):.2f}%")
+            if volley_avg_rate_fixed_window_metric:
+                match_total_volley_avg_window_scouted = 0
+                for robot in current_match_data["red_team_robots"]:
+                    shots_volley_error_rate = calculate_error(volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score'], robot['total_shots'])
+                    hits_volley_error_rate = calculate_error(volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score'], robot['total_hits'])
+                    match_total_volley_avg_window_scouted += volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score']
 
-            total_score = sum(robot_scores.values())
-            # print(f"\nTotal scouted hits based on fire rate: {total_score:.2f}")
-            # print(f"Shots error rate based on fire rate: {calculate_error(total_score, current_match_data['red_team_shots']):.2f}%")
-            # print(f"Hits error rate based on fire rate: {calculate_error(total_score, current_match_data['red_team_hits']):.2f}%")
-
-            # print("\n")
-            # match_total_fixed_window_scouted = 0
-            # for robot in current_match_data["red_team_robots"]:
-            #     print(f"Window avg rate scouted hits: {robot['AvgRateFixedWindow']:.2f} for {robot['name']}")
-            #     match_total_fixed_window_scouted += robot['AvgRateFixedWindow']
-            # print(f"\nTotal window avg rate scouted hits: {match_total_fixed_window_scouted:.2f}")
-
-            # print("\n")
-            match_total_volley_avg_window_scouted = 0
-            for robot in current_match_data["red_team_robots"]:
-                # print(f"{robot['name']} Volley avg rate scouted hits: {volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score']:.2f}")
-
-                shots_volley_error_rate = calculate_error(volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score'], robot['total_shots'])
-                hits_volley_error_rate = calculate_error(volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score'], robot['total_hits'])
-                # print(f"{robot['name']} Shots volley error rate: {shots_volley_error_rate:.2f}%")
-                # print(f"{robot['name']} Hits volley error rate: {hits_volley_error_rate:.2f}%")
-
-                match_total_volley_avg_window_scouted += volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score']
-            # print(f"\nTotal volley avg rate scouted hits: {match_total_volley_avg_window_scouted:.2f}")
-            # print(f"Total shots volley error rate: {calculate_error(match_total_volley_avg_window_scouted, current_match_data['red_team_shots']):.2f}%")
-            # print(f"Total hits volley error rate: {calculate_error(match_total_volley_avg_window_scouted, current_match_data['red_team_hits']):.2f}%")
-
-            for robot in current_match_data["red_team_robots"]:
-                volley_avg_rate_fixed_window_metric.reset_robot_volleys(robot['name'])
+                for robot in current_match_data["red_team_robots"]:
+                    volley_avg_rate_fixed_window_metric.reset_robot_volleys(robot['name'])
 
 
         # Blue Team
-        # if (i + 1) % notification_step == 0: # same as above
-            # print("\n[BLUE TEAM]")
         for robot in match.blue_alliance:
             stats = scout_robot_match(robot, scout, MATCH_ACCURACY_VARIANCE)
             current_match_data["blue_team_robots"].append(stats)
             current_match_data["blue_team_shots"] += stats["total_shots"]
             current_match_data["blue_team_hits"] += stats["total_hits"]
 
-            stats["AvgRateFixedWindow"] = fixed_window_metric.calculate_AvgRateFixedWindow(robot.name, stats["total_hits"], stats["total_fire_time"])
-            stats["VolleyAvgRate"] = volley_avg_rate_fixed_window_metric.calculate_volley_avg_rate_fixed_window(stats)
+            if fixed_window_metric:
+                stats["AvgRateFixedWindow"] = fixed_window_metric.calculate_AvgRateFixedWindow(robot.name, stats["total_hits"], stats["total_fire_time"])
+            else:
+                stats["AvgRateFixedWindow"] = 0
+            if volley_avg_rate_fixed_window_metric:
+                stats["VolleyAvgRate"] = volley_avg_rate_fixed_window_metric.calculate_volley_avg_rate_fixed_window(stats)
+            else:
+                stats["VolleyAvgRate"] = 0
 
-        robot_scores = fire_rate_metric.calculate_score_by_fire_rate(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"], 10)
-        weight_based_max_fire_rate_metric.calculate_weight_based_max_fire_rate(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
-        weight_based_metric.calculate_weight_based_metric(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
-        weight_based_first_volley_metric.calculate_weight_based_first_volley_metric(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
-        first_volley_accuracy_weight_metric.calculate_first_volley_accuracy_weight(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
-        first_volley_accuracy_weight_metric_tournament.calculate_first_volley_accuracy_weight_tournament(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
-        first_volley_bps_weighted_accuracy_metric.calculate_first_volley_bps_weighted_accuracy(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
-        first_volley_bps_weighted_accuracy_tournament_metric.calculate_first_volley_bps_weighted_accuracy_tournament(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
-        fire_time_weight_metric.calculate_fire_time_weight(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
+        if fire_rate_metric:
+            robot_scores = fire_rate_metric.calculate_score_by_fire_rate(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"], 10)
+        if weight_based_max_fire_rate_metric:
+            weight_based_max_fire_rate_metric.calculate_weight_based_max_fire_rate(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
+        if weight_based_metric:
+            weight_based_metric.calculate_weight_based_metric(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
+        if weight_based_first_volley_metric:
+            weight_based_first_volley_metric.calculate_weight_based_first_volley_metric(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
+        if first_volley_accuracy_weight_metric:
+            first_volley_accuracy_weight_metric.calculate_first_volley_accuracy_weight(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
+        if first_volley_accuracy_weight_metric_tournament:
+            first_volley_accuracy_weight_metric_tournament.calculate_first_volley_accuracy_weight_tournament(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
+        if first_volley_bps_weighted_accuracy_metric:
+            first_volley_bps_weighted_accuracy_metric.calculate_first_volley_bps_weighted_accuracy(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
+        if first_volley_bps_weighted_accuracy_tournament_metric:
+            first_volley_bps_weighted_accuracy_tournament_metric.calculate_first_volley_bps_weighted_accuracy_tournament(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
+        if fire_time_weight_metric:
+            fire_time_weight_metric.calculate_fire_time_weight(current_match_data["blue_team_robots"], current_match_data["blue_team_hits"])
 
-        opr.add_match(match.red_alliance, current_match_data["red_team_hits"], match.blue_alliance, current_match_data["blue_team_hits"])
-        opr.calculate_opr()
+        if opr:
+            opr.add_match(match.red_alliance, current_match_data["red_team_hits"], match.blue_alliance, current_match_data["blue_team_hits"])
+            opr.calculate_opr()
 
         match_results.append(current_match_data)
 
         if (i + 1) % notification_step == 0:
-            # print(f"Total blue team shots: {current_match_data['blue_team_shots']}")
-            # print(f"Total blue team hits: {current_match_data['blue_team_hits']}")
-            # print("\n")
+            if fire_rate_metric:
+                total_score = sum(robot_scores.values())
 
-            # for robot_name in robot_scores:
-                # print(f"Scouted hits based on fire rate: {robot_scores[robot_name]:.2f} for {robot_name}")
-                # for current_match_robot_data in current_match_data["blue_team_robots"]:
-                #     if current_match_robot_data["name"] == robot_name:
-                        # print(f"Shots error rate based on fire rate: {calculate_error(robot_scores[robot_name], current_match_robot_data['total_shots']):.2f}%")
-                        # print(f"Hits error rate based on fire rate: {calculate_error(robot_scores[robot_name], current_match_robot_data['total_hits']):.2f}%")
+            if volley_avg_rate_fixed_window_metric:
+                match_total_volley_avg_window_scouted = 0
+                for robot in current_match_data["blue_team_robots"]:
+                    shots_volley_error_rate = calculate_error(volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score'], robot['total_shots'])
+                    hits_volley_error_rate = calculate_error(volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score'], robot['total_hits'])
+                    match_total_volley_avg_window_scouted += volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score']
 
-            total_score = sum(robot_scores.values())
-            # print(f"\nTotal scouted hits based on fire rate: {total_score:.2f}")
-            # print(f"Shots error rate based on fire rate: {calculate_error(total_score, current_match_data['blue_team_shots']):.2f}%")
-            # print(f"Hits error rate based on fire rate: {calculate_error(total_score, current_match_data['blue_team_hits']):.2f}%")
-
-            # print("\n")
-            # match_total_fixed_window_scouted = 0
-            # for robot in current_match_data["blue_team_robots"]:
-            #     print(f"Window avg rate: {robot['AvgRateFixedWindow']:.2f} for {robot['name']}")
-            #     match_total_fixed_window_scouted += robot['AvgRateFixedWindow']
-            # print(f"\nTotal window avg rate: {match_total_fixed_window_scouted:.2f}")
-
-            # print("\n")
-            match_total_volley_avg_window_scouted = 0
-            for robot in current_match_data["blue_team_robots"]:
-                # print(f"{robot['name']} Volley avg rate scouted hits: {(volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score']):.2f}")
-
-                shots_volley_error_rate = calculate_error(volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score'], robot['total_shots'])
-                # print(f"{robot['name']} Shots Volley error rate: {shots_volley_error_rate:.2f}%")
-                hits_volley_error_rate = calculate_error(volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score'], robot['total_hits'])
-                # print(f"{robot['name']} Hits Volley error rate: {hits_volley_error_rate:.2f}%")
-
-
-                match_total_volley_avg_window_scouted += volley_avg_rate_fixed_window_metric.get_volley_scores()[robot['name']]['volleys_score']
-            # print(f"\nTotal volley avg rate scouted hits: {match_total_volley_avg_window_scouted:.2f}")
-            # print(f"Total shots Volley error rate: {calculate_error(match_total_volley_avg_window_scouted, current_match_data['blue_team_shots']):.2f}%")
-            # print(f"Total hits Volley error rate: {calculate_error(match_total_volley_avg_window_scouted, current_match_data['blue_team_hits']):.2f}%")
-
-            for robot in current_match_data["blue_team_robots"]:
-                volley_avg_rate_fixed_window_metric.reset_robot_volleys(robot['name'])
-
-    # print("\n")
-    # print(f"Schedule Score: {schedule_score}")
-    # print("Simulation completed!")
-    # print(f"Total matches simulated: {len(match_results)}")
+                for robot in current_match_data["blue_team_robots"]:
+                    volley_avg_rate_fixed_window_metric.reset_robot_volleys(robot['name'])
 
     final_robot_stats = {} # empty dictionary to store totals
 
@@ -297,19 +223,14 @@ def run_simulation(all_robots):
             final_robot_stats[name]["total_AvgRateFixedWindow"] += robot_data["AvgRateFixedWindow"]
             final_robot_stats[name]["total_VolleyAvgRate"] += robot_data["VolleyAvgRate"]
 
-    # print("\n")
-    # print("=" * 40)
-    # print("FINAL RESULTS FOR EACH ROBOT")
-    # print("=" * 40)
-    # print("\n")
-
     robot_names_list = list(final_robot_stats.keys()) # get the list of names
     robot_names_list.sort() # sort them (look better)
 
     for name in robot_names_list:
         data = final_robot_stats[name]
 
-        robot_avg_fire_rate = fire_rate_metric.get_averages()[name][1]
+        if fire_rate_metric:
+            robot_avg_fire_rate = fire_rate_metric.get_averages()[name][1]
 
         shots = data["total_shots_fired"]
         hits = data["total_shots_hit"]
@@ -323,51 +244,12 @@ def run_simulation(all_robots):
 
         shot_error = calculate_error(scouted, shots)
         hit_error = calculate_error(scouted, hits)
-        fire_rate_scouted = robot_avg_fire_rate * data['total_fire_time']
-        fire_rate_error = calculate_error(fire_rate_scouted, hits)
+        if fire_rate_metric:
+            fire_rate_scouted = robot_avg_fire_rate * data['total_fire_time']
+            fire_rate_error = calculate_error(fire_rate_scouted, hits)
 
-        # print(f"Robot Name: {name}")
-        # print(f" Matches: {data['matches_played']} | Volleys: {data['volleys_fired']}")
-        # print(f" Shots: {shots}, Hits: {hits} | Scouted: {scouted:.1f}")
-        # print(f" Real Accuracy: {real_acc:.2f}% (Placed: {data['placed_accuracy']:.1f}%)")
-        # print(f" Shot Error: {shot_error:.2f}% | Hit Error: {hit_error:.2f}%")
-        # print(f"\n")
-        # print(f" Robot avg fire rate: {robot_avg_fire_rate:.2f}")
-        # print(f" Shots: {shots}, Hits: {hits} | Scouted: {fire_rate_scouted:.2f}")
-        # print(f" Fire rate error: {fire_rate_error:.2f}%")
-        # print(f"\n")
-        # print(f" Volley avg error rate: {calculate_error(data['total_VolleyAvgRate'], hits):.2f}%")
-        # print("\n")
-        # print(f" OPR: {opr.get_opr()[name]:.2f}")
-        # print(f" Real avg hits per match: {hits / data['matches_played']:.2f}")
-        # print(f" OPR error rate: {calculate_error(opr.get_opr()[name], hits / data['matches_played']):.2f}%")
-        # print(f"\n")
-        # print(f" Fixed window scouted hits: {data['total_AvgRateFixedWindow']:.2f}")
-        # print(f" Fixed window error rate: {calculate_error(data['total_AvgRateFixedWindow'], hits):.2f}%")
-        # print(f" Fixed window avg rate: {fixed_window_metric.get_rates()[name]:.2f}")
-
-        # print("-" * 30)
-
-    # print("\n")
-    # print("-" * 40)
-    # print("TOTAL ERROR RATES ACROSS ALL MATCHES AND ROBOTS")
-    # print("-" * 40)
-
-    total_magazine_error = 0
-    total_fire_rate_error = 0
-    total_volley_error = 0
-    total_opr_error = 0
-    total_weight_based_max_fire_rate_error = 0
-    total_weight_based_error = 0
-    total_weight_based_first_volley_error = 0
-    total_magazine_shots_error = 0
-    total_volley_shots_error = 0
-    total_first_volley_accuracy_weight_error = 0
-    total_first_volley_accuracy_weight_tournament_error = 0
-    total_first_volley_bps_weighted_accuracy_error = 0
-    total_first_volley_bps_weighted_accuracy_tournament_error = 0
-    total_fire_time_weight_error = 0
-
+    # Error calculation - only for enabled metrics
+    errors = {}
     robot_count = len(robot_names_list)
 
     for robot_name in robot_names_list:
@@ -377,137 +259,137 @@ def run_simulation(all_robots):
         actual_shots = robot_stats["total_shots_fired"]
         scouted_shots = robot_stats["total_shots_scouted"]
 
+        # Magazine errors (always computed since they use raw scouting data)
         magazine_error = calculate_error(scouted_shots, actual_hits)
-        total_magazine_error += magazine_error
+        errors["magazine_error"] = errors.get("magazine_error", 0) + magazine_error
 
         magazine_shots_error = calculate_error(scouted_shots, actual_shots)
-        total_magazine_shots_error += magazine_shots_error
+        errors["magazine_shots_error"] = errors.get("magazine_shots_error", 0) + magazine_shots_error
 
-        robot_avg_fire_rate = fire_rate_metric.get_averages()[robot_name][1]
-        fire_rate_scouted_hits = robot_avg_fire_rate * robot_stats['total_fire_time']
+        if fire_rate_metric:
+            robot_avg_fire_rate = fire_rate_metric.get_averages()[robot_name][1]
+            fire_rate_scouted_hits = robot_avg_fire_rate * robot_stats['total_fire_time']
+            fire_rate_error = calculate_error(fire_rate_scouted_hits, actual_hits)
+            errors["fire_rate_error"] = errors.get("fire_rate_error", 0) + fire_rate_error
 
-        fire_rate_error = calculate_error(fire_rate_scouted_hits, actual_hits)
-        total_fire_rate_error += fire_rate_error
+        if volley_avg_rate_fixed_window_metric:
+            volley_avg_rate_total = robot_stats['total_VolleyAvgRate']
+            volley_error = calculate_error(volley_avg_rate_total, actual_hits)
+            errors["volley_error"] = errors.get("volley_error", 0) + volley_error
+            volley_shots_error = calculate_error(volley_avg_rate_total, actual_shots)
+            errors["volley_shots_error"] = errors.get("volley_shots_error", 0) + volley_shots_error
 
-        volley_avg_rate_total = robot_stats['total_VolleyAvgRate']
+        if opr:
+            opr_value = opr.get_opr()[robot_name]
+            matches_played = robot_stats['matches_played']
+            real_hits_per_match = actual_hits / matches_played
+            opr_error = calculate_error(opr_value, real_hits_per_match)
+            errors["opr_error"] = errors.get("opr_error", 0) + opr_error
 
-        volley_error = calculate_error(volley_avg_rate_total, actual_hits)
-        total_volley_error += volley_error
+        if weight_based_max_fire_rate_metric:
+            err = calculate_error(weight_based_max_fire_rate_metric.get_final_scores()[robot_name], actual_hits)
+            errors["weight_based_max_fire_rate_error"] = errors.get("weight_based_max_fire_rate_error", 0) + err
 
-        volley_shots_error = calculate_error(volley_avg_rate_total, actual_shots)
-        total_volley_shots_error += volley_shots_error
+        if weight_based_metric:
+            err = calculate_error(weight_based_metric.get_final_scores()[robot_name], actual_hits)
+            errors["weight_based_error"] = errors.get("weight_based_error", 0) + err
 
-        opr_value = opr.get_opr()[robot_name]
+        if weight_based_first_volley_metric:
+            err = calculate_error(weight_based_first_volley_metric.get_final_scores()[robot_name], actual_hits)
+            errors["weight_based_first_volley_error"] = errors.get("weight_based_first_volley_error", 0) + err
 
-        matches_played = robot_stats['matches_played']
-        real_hits_per_match = actual_hits / matches_played
+        if first_volley_accuracy_weight_metric:
+            err = calculate_error(first_volley_accuracy_weight_metric.get_final_scores()[robot_name], actual_hits)
+            errors["first_volley_accuracy_weight_error"] = errors.get("first_volley_accuracy_weight_error", 0) + err
 
-        opr_error = calculate_error(opr_value, real_hits_per_match)
-        total_opr_error += opr_error
+        if first_volley_accuracy_weight_metric_tournament:
+            err = calculate_error(first_volley_accuracy_weight_metric_tournament.get_final_scores()[robot_name], actual_hits)
+            errors["first_volley_accuracy_weight_tournament_error"] = errors.get("first_volley_accuracy_weight_tournament_error", 0) + err
 
-        weight_based_max_fire_rate_error = calculate_error(weight_based_max_fire_rate_metric.get_final_scores()[robot_name], actual_hits)
-        total_weight_based_max_fire_rate_error += weight_based_max_fire_rate_error
+        if first_volley_bps_weighted_accuracy_metric:
+            err = calculate_error(first_volley_bps_weighted_accuracy_metric.get_final_scores()[robot_name], actual_hits)
+            errors["first_volley_bps_weighted_accuracy_error"] = errors.get("first_volley_bps_weighted_accuracy_error", 0) + err
 
-        weight_based_error = calculate_error(weight_based_metric.get_final_scores()[robot_name], actual_hits)
-        total_weight_based_error += weight_based_error
+        if first_volley_bps_weighted_accuracy_tournament_metric:
+            err = calculate_error(first_volley_bps_weighted_accuracy_tournament_metric.get_final_scores()[robot_name], actual_hits)
+            errors["first_volley_bps_weighted_accuracy_tournament_error"] = errors.get("first_volley_bps_weighted_accuracy_tournament_error", 0) + err
 
-        weight_based_first_volley_error = calculate_error(weight_based_first_volley_metric.get_final_scores()[robot_name], actual_hits)
-        total_weight_based_first_volley_error += weight_based_first_volley_error
+        if fire_time_weight_metric:
+            err = calculate_error(fire_time_weight_metric.get_final_scores()[robot_name], actual_hits)
+            errors["fire_time_weight_error"] = errors.get("fire_time_weight_error", 0) + err
 
-        first_volley_accuracy_weight_error = calculate_error(first_volley_accuracy_weight_metric.get_final_scores()[robot_name], actual_hits)
-        total_first_volley_accuracy_weight_error += first_volley_accuracy_weight_error
+    # Average all errors by robot count
+    avg_errors = {key: value / robot_count for key, value in errors.items()}
 
-        first_volley_accuracy_weight_tournament_error = calculate_error(first_volley_accuracy_weight_metric_tournament.get_final_scores()[robot_name], actual_hits)
-        total_first_volley_accuracy_weight_tournament_error += first_volley_accuracy_weight_tournament_error
-
-        first_volley_bps_weighted_accuracy_error = calculate_error(first_volley_bps_weighted_accuracy_metric.get_final_scores()[robot_name], actual_hits)
-        total_first_volley_bps_weighted_accuracy_error += first_volley_bps_weighted_accuracy_error
-
-        first_volley_bps_weighted_accuracy_tournament_error = calculate_error(first_volley_bps_weighted_accuracy_tournament_metric.get_final_scores()[robot_name], actual_hits)
-        total_first_volley_bps_weighted_accuracy_tournament_error += first_volley_bps_weighted_accuracy_tournament_error
-
-        fire_time_weight_error = calculate_error(fire_time_weight_metric.get_final_scores()[robot_name], actual_hits)
-        total_fire_time_weight_error += fire_time_weight_error
-
-    avg_opr_error = total_opr_error / robot_count
-    print(f"Average OPR Error: {avg_opr_error:.2f}%")
-
-    avg_fire_rate_error = total_fire_rate_error / robot_count
-    print(f"Average Fire Rate Error: {avg_fire_rate_error:.2f}%")
-
-    print("-" * 40)
-
-    avg_magazine_error = total_magazine_error / robot_count
-    print(f"Magazine Size Hits Error: {avg_magazine_error:.2f}%")
-
-    avg_magazine_shots_error = total_magazine_shots_error / robot_count
-    print(f"Magazine Size Shots Error: {avg_magazine_shots_error:.2f}%")
-
-    avg_volley_error = total_volley_error / robot_count
-    print(f"First Volley Hits Error: {avg_volley_error:.2f}%")
-
-    avg_volley_shots_error = total_volley_shots_error / robot_count
-    print(f"First Volley Shots Error: {avg_volley_shots_error:.2f}%")
+    # Print enabled metric results
+    if "opr_error" in avg_errors:
+        print(f"Average OPR Error: {avg_errors['opr_error']:.2f}%")
+    if "fire_rate_error" in avg_errors:
+        print(f"Average Fire Rate Error: {avg_errors['fire_rate_error']:.2f}%")
 
     print("-" * 40)
 
-    avg_weight_based_max_fire_rate_error = total_weight_based_max_fire_rate_error / robot_count
-    print(f"Weight Based + Max Fire Rate (Magazine) error rate: {avg_weight_based_max_fire_rate_error:.2f}%")
+    print(f"Magazine Size Hits Error: {avg_errors.get('magazine_error', 0):.2f}%")
+    print(f"Magazine Size Shots Error: {avg_errors.get('magazine_shots_error', 0):.2f}%")
 
-    avg_weight_based_error = total_weight_based_error / robot_count
-    print(f"Weight Based (Magazine) error rate: {avg_weight_based_error:.2f}%")
+    if "volley_error" in avg_errors:
+        print(f"First Volley Hits Error: {avg_errors['volley_error']:.2f}%")
+    if "volley_shots_error" in avg_errors:
+        print(f"First Volley Shots Error: {avg_errors['volley_shots_error']:.2f}%")
 
-    avg_weight_based_first_volley_error = total_weight_based_first_volley_error / robot_count
-    print(f"Weight Based (First Volley) error rate: {avg_weight_based_first_volley_error:.2f}%")
+    print("-" * 40)
 
-    avg_first_volley_accuracy_weight_error = total_first_volley_accuracy_weight_error / robot_count
-    print(f"First Volley Accuracy Weight error rate: {avg_first_volley_accuracy_weight_error:.2f}%")
-
-    avg_first_volley_accuracy_weight_tournament_error = total_first_volley_accuracy_weight_tournament_error / robot_count
-    print(f"First Volley Accuracy Weight (Tournament) error rate: {avg_first_volley_accuracy_weight_tournament_error:.2f}%")
-
-    avg_first_volley_bps_weighted_accuracy_error = total_first_volley_bps_weighted_accuracy_error / robot_count
-    print(f"First Volley BPS Weighted Accuracy error rate: {avg_first_volley_bps_weighted_accuracy_error:.2f}%")
-
-    avg_first_volley_bps_weighted_accuracy_tournament_error = total_first_volley_bps_weighted_accuracy_tournament_error / robot_count
-    print(f"First Volley BPS Weighted Accuracy (Tournament) error rate: {avg_first_volley_bps_weighted_accuracy_tournament_error:.2f}%")
-
-    avg_fire_time_weight_error = total_fire_time_weight_error / robot_count
-    print(f"Fire Time Weight error rate: {avg_fire_time_weight_error:.2f}%")
+    if "weight_based_max_fire_rate_error" in avg_errors:
+        print(f"Weight Based + Max Fire Rate (Magazine) error rate: {avg_errors['weight_based_max_fire_rate_error']:.2f}%")
+    if "weight_based_error" in avg_errors:
+        print(f"Weight Based (Magazine) error rate: {avg_errors['weight_based_error']:.2f}%")
+    if "weight_based_first_volley_error" in avg_errors:
+        print(f"Weight Based (First Volley) error rate: {avg_errors['weight_based_first_volley_error']:.2f}%")
+    if "first_volley_accuracy_weight_error" in avg_errors:
+        print(f"First Volley Accuracy Weight error rate: {avg_errors['first_volley_accuracy_weight_error']:.2f}%")
+    if "first_volley_accuracy_weight_tournament_error" in avg_errors:
+        print(f"First Volley Accuracy Weight (Tournament) error rate: {avg_errors['first_volley_accuracy_weight_tournament_error']:.2f}%")
+    if "first_volley_bps_weighted_accuracy_error" in avg_errors:
+        print(f"First Volley BPS Weighted Accuracy error rate: {avg_errors['first_volley_bps_weighted_accuracy_error']:.2f}%")
+    if "first_volley_bps_weighted_accuracy_tournament_error" in avg_errors:
+        print(f"First Volley BPS Weighted Accuracy (Tournament) error rate: {avg_errors['first_volley_bps_weighted_accuracy_tournament_error']:.2f}%")
+    if "fire_time_weight_error" in avg_errors:
+        print(f"Fire Time Weight error rate: {avg_errors['fire_time_weight_error']:.2f}%")
 
     print("\n") # like alw terminal next to a line is annoying me
 
-    return avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error, avg_weight_based_max_fire_rate_error, avg_weight_based_error, avg_weight_based_first_volley_error, avg_first_volley_accuracy_weight_error, avg_magazine_shots_error, avg_volley_shots_error, avg_first_volley_accuracy_weight_tournament_error, avg_first_volley_bps_weighted_accuracy_error, avg_first_volley_bps_weighted_accuracy_tournament_error, avg_fire_time_weight_error
+    return avg_errors
 
 
 def print_suite_results(stats, suite_label):
-    (avg_magazine_error, avg_fire_rate_error, avg_volley_error, avg_opr_error,
-     avg_weight_based_max_fire_rate_error, avg_weight_based_error,
-     avg_weight_based_first_volley_error, avg_first_volley_accuracy_weight_error,
-     avg_magazine_shots_error, avg_volley_shots_error,
-     avg_first_volley_accuracy_weight_tournament_error, avg_first_volley_bps_weighted_accuracy_error,
-     avg_first_volley_bps_weighted_accuracy_tournament_error, avg_fire_time_weight_error) = stats
-
     print(f"\n\n{'='*20} {suite_label} RESULTS {'='*20}\n\n")
-    print(f"Total avg magazine error: {avg_magazine_error}")
-    print(f"Total avg fire rate error: {avg_fire_rate_error}")
-    print(f"Total avg volley error: {avg_volley_error}")
-    print(f"Total avg opr error: {avg_opr_error}")
-    print("-" * 40)
-    print(f"Total avg magazine shots error: {avg_magazine_shots_error}")
-    print(f"Total avg volley shots error: {avg_volley_shots_error}")
-    print("-" * 40)
-    print(f"Total avg weight based max fire rate error: {avg_weight_based_max_fire_rate_error}")
-    print(f"Total avg weight based error: {avg_weight_based_error}")
-    print(f"Total avg weight based (first volley BPS) error: {avg_weight_based_first_volley_error}")
-    print(f"Total avg first volley accuracy weight error: {avg_first_volley_accuracy_weight_error}")
-    print(f"Total avg first volley accuracy weight (tournament) error: {avg_first_volley_accuracy_weight_tournament_error}")
-    print(f"Total avg first volley BPS weighted accuracy error: {avg_first_volley_bps_weighted_accuracy_error}")
-    print(f"Total avg first volley BPS weighted accuracy (tournament) error: {avg_first_volley_bps_weighted_accuracy_tournament_error}")
-    print(f"Total avg fire time weight error: {avg_fire_time_weight_error}")
+
+    label_map = {
+        "magazine_error": "Total avg magazine error",
+        "fire_rate_error": "Total avg fire rate error",
+        "volley_error": "Total avg volley error",
+        "opr_error": "Total avg opr error",
+        "magazine_shots_error": "Total avg magazine shots error",
+        "volley_shots_error": "Total avg volley shots error",
+        "weight_based_max_fire_rate_error": "Total avg weight based max fire rate error",
+        "weight_based_error": "Total avg weight based error",
+        "weight_based_first_volley_error": "Total avg weight based (first volley BPS) error",
+        "first_volley_accuracy_weight_error": "Total avg first volley accuracy weight error",
+        "first_volley_accuracy_weight_tournament_error": "Total avg first volley accuracy weight (tournament) error",
+        "first_volley_bps_weighted_accuracy_error": "Total avg first volley BPS weighted accuracy error",
+        "first_volley_bps_weighted_accuracy_tournament_error": "Total avg first volley BPS weighted accuracy (tournament) error",
+        "fire_time_weight_error": "Total avg fire time weight error",
+    }
+
+    for key, label in label_map.items():
+        if key in stats:
+            print(f"{label}: {stats[key]}")
 
 
 def main():
+    print(f"Enabled metrics: {', '.join(sorted(ENABLED_METRICS))}")
+    print()
+
     time_based_stats = run_full_simulation_suite(get_time_based_robots, "TIME BASED ROBOT CONFIGS")
     magazine_stats = run_full_simulation_suite(get_magazine_robots, "MAGAZINE SIZE BASED ROBOT CONFIGS")
 
@@ -533,6 +415,7 @@ def main():
     print(f"Max number of volleys: {MAX_NUMBER_OF_VOLLEYS}")
     print(f"Min magazine fill percentage: {MIN_MAGAZINE_FILL_PERCENTAGE}")
     print(f"Max magazine fill percentage: {MAX_MAGAZINE_FILL_PERCENTAGE}")
+    print(f"Enabled metrics: {', '.join(sorted(ENABLED_METRICS))}")
     print("\n")
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 
-NUMBER_OF_RUNS = 25
+NUMBER_OF_RUNS = 2
 
 MATCHES_PER_ROBOT = 10
 ITERATIONS = 1000 # Iterations of match making
@@ -24,3 +24,19 @@ RATE_OF_FIRE_JITTER = 1
 MAX_TIME_TO_DEPLETE = 1000.0
 
 NOTIFICATION_STEP = 1
+
+# Which metrics to run. Comment out any metric you don't need to speed up the simulation.
+ENABLED_METRICS = {
+    # "fire_rate",                                    # IterativeAverageFireRateMetric
+    # "fixed_window",                                 # MatchAvgRateFixedWindowMetric
+    # "volley_avg_rate",                              # VolleyAvgRateFixedWindowMetric
+    "opr",                                          # OPR
+    # "weight_based_max_fire_rate",                   # WeightBasedMaxFireRateMetric
+    "weight_based",                                 # WeightBasedMetric
+    "weight_based_first_volley",                    # WeightBasedFirstVolleyMetric
+    "first_volley_accuracy_weight",                 # FirstVolleyAccuracyWeightMetric
+    # "first_volley_accuracy_weight_tournament",      # FirstVolleyAccuracyWeightMetricTournament
+    "first_volley_bps_weighted_accuracy",           # FirstVolleyBPSWeightedAccuracy
+    # "first_volley_bps_weighted_accuracy_tournament",# FirstVolleyBPSWeightedAccuracyTournament
+    "fire_time_weight",                             # FireTimeWeightMetric
+}
