@@ -1,6 +1,6 @@
 from __future__ import annotations
 from scouter_model import ScouterModel
-from match_maker import make_matches
+from match_maker import make_matches, Match
 import random
 from robot_model import *
 from metrics import *
@@ -256,7 +256,16 @@ def run_simulation(all_robots, schedule):
 
     return errors, actual_values
 
-def run_full_simulation_suite(robot_getter, suite_label):
+def remap_schedule(schedule, from_robots, to_robots):
+    robot_index = {id(robot): i for i, robot in enumerate(from_robots)}
+    new_schedule = []
+    for match in schedule:
+        new_red = [to_robots[robot_index[id(r)]] for r in match.red_alliance]
+        new_blue = [to_robots[robot_index[id(r)]] for r in match.blue_alliance]
+        new_schedule.append(Match(new_red, new_blue))
+    return new_schedule
+
+def run_full_simulation_suite(all_robots, suite_label, schedules):
     aggregated_errors = {
         "Magazine Size Hits Error": [],
         "Max Fire Rate Hits Error": [],
@@ -288,15 +297,6 @@ def run_full_simulation_suite(robot_getter, suite_label):
         "First Volley BPS Weighted Accuracy Hits Error": {"actual": [], "predicted": []},
         "First Volley BPS Weighted Accuracy (Tournament) Hits Error": {"actual": [], "predicted": []}
     }
-
-    all_robots = robot_getter()
-
-    print(f"\nPre-generating {NUMBER_OF_SCHEDULES} schedules...")
-    schedules = []
-    for s in range(NUMBER_OF_SCHEDULES):
-        schedule, score = make_matches(all_robots, MATCHES_PER_ROBOT, ITERATIONS)
-        schedules.append(schedule)
-        print(f"  Schedule {s + 1}/{NUMBER_OF_SCHEDULES} generated (score: {score})")
 
     print(f"\nStarting {suite_label} with {NUMBER_OF_RUNS} runs...")
 
@@ -398,8 +398,20 @@ def main():
     print(f"Iterations: {ITERATIONS}")
     print("-" * 40)
 
-    time_based_stats, time_based_actual = run_full_simulation_suite(get_time_based_robots, "TIME BASED ROBOT CONFIGS")
-    magazine_stats, magazine_actual = run_full_simulation_suite(get_magazine_robots, "MAGAZINE SIZE BASED ROBOT CONFIGS")
+    time_based_robots = get_time_based_robots()
+    magazine_robots = get_magazine_robots()
+
+    print(f"Pre-generating {NUMBER_OF_SCHEDULES} schedules...")
+    schedules = []
+    for s in range(NUMBER_OF_SCHEDULES):
+        schedule, score = make_matches(time_based_robots, MATCHES_PER_ROBOT, ITERATIONS)
+        schedules.append(schedule)
+        print(f"  Schedule {s + 1}/{NUMBER_OF_SCHEDULES} generated (score: {score})")
+
+    magazine_schedules = [remap_schedule(s, time_based_robots, magazine_robots) for s in schedules]
+
+    time_based_stats, time_based_actual = run_full_simulation_suite(time_based_robots, "TIME BASED ROBOT CONFIGS", schedules)
+    magazine_stats, magazine_actual = run_full_simulation_suite(magazine_robots, "MAGAZINE SIZE BASED ROBOT CONFIGS", magazine_schedules)
 
     print_suite_results(time_based_stats, time_based_actual, "TIME BASED ROBOT CONFIGS")
     print_suite_results(magazine_stats, magazine_actual, "MAGAZINE SIZE BASED ROBOT CONFIGS")
