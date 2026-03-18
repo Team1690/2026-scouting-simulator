@@ -53,8 +53,7 @@ def calculate_actual_statistics(actual_list, predicted_list, error_list):
         "Avg Abs Error": np.mean(np.abs(np.array(actual_list) - np.array(predicted_list)))
     }
 
-def run_simulation(all_robots):
-    schedule, schedule_score = make_matches(all_robots, MATCHES_PER_ROBOT, ITERATIONS)
+def run_simulation(all_robots, schedule):
     # No need to track match_results for stats unless debugging
     # match_results = []
 
@@ -292,13 +291,21 @@ def run_full_simulation_suite(robot_getter, suite_label):
 
     all_robots = robot_getter()
 
+    print(f"\nPre-generating {NUMBER_OF_SCHEDULES} schedules...")
+    schedules = []
+    for s in range(NUMBER_OF_SCHEDULES):
+        schedule, score = make_matches(all_robots, MATCHES_PER_ROBOT, ITERATIONS)
+        schedules.append(schedule)
+        print(f"  Schedule {s + 1}/{NUMBER_OF_SCHEDULES} generated (score: {score})")
+
     print(f"\nStarting {suite_label} with {NUMBER_OF_RUNS} runs...")
 
     for i in range(NUMBER_OF_RUNS):
         if (i+1) % 5 == 0 or i == 0:
             print(f"Run {i + 1} / {NUMBER_OF_RUNS}")
 
-        run_errors, run_actual_values = run_simulation(all_robots)
+        schedule = random.choice(schedules)
+        run_errors, run_actual_values = run_simulation(all_robots, schedule)
 
         for metric, error_list in run_errors.items():
             aggregated_errors[metric].extend(error_list)

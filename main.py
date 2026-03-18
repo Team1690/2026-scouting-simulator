@@ -20,9 +20,17 @@ def run_full_simulation_suite(robot_getter, suite_label):
 
     all_robots = robot_getter()
 
+    print(f"Pre-generating {NUMBER_OF_SCHEDULES} schedules...")
+    schedules = []
+    for s in range(NUMBER_OF_SCHEDULES):
+        schedule, score = make_matches(all_robots, MATCHES_PER_ROBOT, ITERATIONS)
+        schedules.append(schedule)
+        print(f"  Schedule {s + 1}/{NUMBER_OF_SCHEDULES} generated (score: {score})")
+
     for i in range(NUMBER_OF_RUNS):
         print(f"\n\nRUN {i + 1} / {NUMBER_OF_RUNS} \n\n")
-        run_results = run_simulation(all_robots)
+        schedule = random.choice(schedules)
+        run_results = run_simulation(all_robots, schedule)
 
         for key, value in run_results.items():
             totals[key] = totals.get(key, 0) + value
@@ -30,9 +38,7 @@ def run_full_simulation_suite(robot_getter, suite_label):
     return {key: value / NUMBER_OF_RUNS for key, value in totals.items()}
 
 
-def run_simulation(all_robots):
-    schedule, schedule_score = make_matches(all_robots, MATCHES_PER_ROBOT, ITERATIONS)
-
+def run_simulation(all_robots, schedule):
     match_results = []
 
     scout = ScouterModel(SCOUT_MIN_TIME_ERROR, SCOUT_MAX_TIME_ERROR, SCOUT_MAGAZINE_ERROR) # min_time_error, max_time_error, magazine_error
