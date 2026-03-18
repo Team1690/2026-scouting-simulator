@@ -222,13 +222,11 @@ class WeightBasedMetric:
 
     def calculate_weight_based_metric(self, robot_stats: dict, total_score: int):
         scouted_shots = {}
-        capacities = {}
         uncapped = []
         final_scores = {}
 
         for robot_stats in robot_stats:
             scouted_shots[robot_stats["name"]] = robot_stats["total_scouted_shots"]
-            capacities[robot_stats["name"]] = robot_stats["max_fire_rate"] * robot_stats["total_fire_time"]
             final_scores[robot_stats["name"]] = 0.0
             uncapped.append(robot_stats["name"])
 
@@ -443,6 +441,32 @@ class FirstVolleyBPSWeightedAccuracy:
         if current_total_weight > 0:
             for robot_name in uncapped:
                 final_scores[robot_name] += total_score * bps_weighted_accuracy[robot_name] / current_total_weight
+
+        for robot_name, final_score in final_scores.items():
+            self.final_scores[robot_name] += final_score
+
+    def get_final_scores(self):
+        return self.final_scores
+
+class FireTimeWeightMetric:
+    def __init__(self, all_robots):
+        self.final_scores = {}
+        for robot in all_robots:
+            self.final_scores[robot.name] = 0.0
+
+    def calculate_fire_time_weight(self, robot_stats_list: list, total_score: int):
+        fire_times = {}
+        final_scores = {}
+
+        for robot_stats in robot_stats_list:
+            fire_times[robot_stats["name"]] = robot_stats["total_fire_time"]
+            final_scores[robot_stats["name"]] = 0.0
+
+        total_fire_time = sum(fire_times.values())
+
+        if total_fire_time > 0:
+            for robot_name in fire_times:
+                final_scores[robot_name] = total_score * fire_times[robot_name] / total_fire_time
 
         for robot_name, final_score in final_scores.items():
             self.final_scores[robot_name] += final_score
