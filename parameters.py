@@ -1,9 +1,9 @@
 
-NUMBER_OF_RUNS = 150
+NUMBER_OF_RUNS = 500
 
 MATCHES_PER_ROBOT = 10
-ITERATIONS = 20000 # Iterations of match making
-NUMBER_OF_SCHEDULES = 3 # Pre-generate this many schedules and reuse them across runs
+ITERATIONS = 50000 # Iterations of match making
+NUMBER_OF_SCHEDULES = 2 # Pre-generate this many schedules and reuse them across runs
 
 MIN_ACCURACY = 0.50
 MAX_ACCURACY = 0.95
@@ -11,9 +11,9 @@ MIN_MAGAZINE_SIZE = 20
 MAX_MAGAZINE_SIZE = 80
 
 MATCH_ACCURACY_VARIANCE = 0.1
-SCOUT_MIN_TIME_ERROR = -1.00
-SCOUT_MAX_TIME_ERROR = 1.00
-SCOUT_MAGAZINE_ERROR = 0.15 # gauess error range applied to the actual magazine level before snapping to closest bucket
+SCOUT_MIN_TIME_ERROR = -0.25
+SCOUT_MAX_TIME_ERROR = 0.25
+SCOUT_MAGAZINE_ERROR = 0.05 # gauess error range applied to the actual magazine level before snapping to closest bucket
 
 SIMULATION_TIME_STEP = 0.05
 MIN_NUMBER_OF_VOLLEYS = 1
@@ -42,5 +42,5 @@ ENABLED_METRICS = {
     # "first_volley_accuracy_weight_tournament",      # FirstVolleyAccuracyWeightMetricTournament
     "first_volley_bps_weighted_accuracy",           # FirstVolleyBPSWeightedAccuracy
     # "first_volley_bps_weighted_accuracy_tournament",# FirstVolleyBPSWeightedAccuracyTournament
-    "fire_time_weight",                             # FireTimeWeightMetric
+    # "fire_time_weight",                             # FireTimeWeightMetric
 }

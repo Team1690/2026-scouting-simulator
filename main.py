@@ -368,30 +368,44 @@ def run_simulation(all_robots, schedule):
 
 
 def print_suite_results(stats, suite_label):
-    print(f"\n\n{'='*20} {suite_label} RESULTS {'='*20}\n\n")
+    print(f"\n\n{'='*20} {suite_label} RESULTS {'='*20}\n")
 
-    label_map = {
-        "magazine_error": "Total avg magazine error",
-        "fire_rate_error": "Total avg fire rate error",
-        "volley_error": "Total avg volley error",
-        "opr_error": "Total avg opr error",
-        "magazine_shots_error": "Total avg magazine shots error",
-        "volley_shots_error": "Total avg volley shots error",
-        "weight_based_max_fire_rate_error": "Total avg weight based max fire rate error",
-        "weight_based_error": "Total avg weight based error",
-        "weight_based_first_volley_error": "Total avg weight based (first volley BPS) error",
-        "first_volley_accuracy_weight_error": "Total avg first volley accuracy weight error",
-        "first_volley_accuracy_weight_tournament_error": "Total avg first volley accuracy weight (tournament) error",
-        "first_volley_bps_weighted_accuracy_error": "Total avg first volley BPS weighted accuracy error",
-        "first_volley_bps_weighted_accuracy_tournament_error": "Total avg first volley BPS weighted accuracy (tournament) error",
-        "fire_time_weight_error": "Total avg fire time weight error",
-        "per_volley_magazine_shots_error": "Total avg per-volley magazine shots error",
-        "per_match_magazine_shots_error": "Total avg per-match magazine shots error",
+    basic = {
+        "opr_error": "OPR error",
+        "fire_rate_error": "Fire rate error",
     }
-
-    for key, label in label_map.items():
+    for key, label in basic.items():
         if key in stats:
-            print(f"{label}: {stats[key]}")
+            print(f"  {label}: {stats[key]:.6f}%")
+
+    print("-" * 40)
+
+    mag = {
+        "magazine_shots_error": "Magazine shots error (per-tournament)",
+        "per_volley_magazine_shots_error": "Magazine shots error (per-volley avg)",
+        "per_match_magazine_shots_error": "Magazine shots error (per-match avg)",
+    }
+    for key, label in mag.items():
+        if key in stats:
+            print(f"  {label}: {stats[key]:.6f}%")
+
+    print("-" * 40)
+
+    composite = {
+        "weight_based_max_fire_rate_error": "Weight Based + Max Fire Rate",
+        "weight_based_error": "Weight Based (Magazine)",
+        "weight_based_first_volley_error": "Weight Based (First Volley BPS)",
+        "first_volley_accuracy_weight_error": "First Volley Accuracy Weight",
+        "first_volley_accuracy_weight_tournament_error": "First Volley Accuracy Weight (Tournament)",
+        "first_volley_bps_weighted_accuracy_error": "First Volley BPS Weighted Accuracy",
+        "first_volley_bps_weighted_accuracy_tournament_error": "First Volley BPS Weighted Accuracy (Tournament)",
+        "fire_time_weight_error": "Fire Time Weight",
+    }
+    for key, label in composite.items():
+        if key in stats:
+            print(f"  {label}: {stats[key]:.6f}%")
+
+    print()
 
 
 def main():
