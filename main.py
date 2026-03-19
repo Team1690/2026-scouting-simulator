@@ -177,34 +177,7 @@ def run_simulation(all_robots, schedule):
     final_robot_stats = {} # empty dictionary to store totals
 
     for match_info in match_results:
-        for robot_data in match_info["red_team_robots"]: # for every robot in the red team
-            name = robot_data["name"]
-
-            if name not in final_robot_stats: # if we haven't seen this robot before
-                final_robot_stats[name] = {
-                    "total_shots_fired": 0,
-                    "total_shots_hit": 0,
-                    "total_shots_scouted": 0,
-                    "matches_played": 0,
-                    "volleys_fired": 0,
-                    "placed_accuracy": robot_data["placed_accuracy"],
-                    "total_fire_time": 0,
-                    "total_AvgRateFixedWindow": 0,
-                    "total_VolleyAvgRate": 0,
-                }
-
-            # Add the data from this match to the total
-            final_robot_stats[name]["total_shots_fired"] += robot_data["total_shots"]
-            final_robot_stats[name]["total_shots_hit"] += robot_data["total_hits"]
-            final_robot_stats[name]["total_shots_scouted"] += robot_data["total_scouted_shots"]
-            final_robot_stats[name]["matches_played"] += 1
-            final_robot_stats[name]["volleys_fired"] += robot_data["volleys"]
-            final_robot_stats[name]["total_fire_time"] += robot_data["total_fire_time"]
-            final_robot_stats[name]["total_AvgRateFixedWindow"] += robot_data["AvgRateFixedWindow"]
-            final_robot_stats[name]["total_VolleyAvgRate"] += robot_data["VolleyAvgRate"]
-
-        # Do the blue team (same exact thing)
-        for robot_data in match_info["blue_team_robots"]:
+        for robot_data in match_info["red_team_robots"] + match_info["blue_team_robots"]:
             name = robot_data["name"]
 
             if name not in final_robot_stats:
@@ -218,6 +191,10 @@ def run_simulation(all_robots, schedule):
                     "total_fire_time": 0,
                     "total_AvgRateFixedWindow": 0,
                     "total_VolleyAvgRate": 0,
+                    "all_volley_shots_errors": [],
+                    "all_volley_hits_errors": [],
+                    "all_match_shots_errors": [],
+                    "all_match_hits_errors": [],
                 }
 
             final_robot_stats[name]["total_shots_fired"] += robot_data["total_shots"]
@@ -228,6 +205,10 @@ def run_simulation(all_robots, schedule):
             final_robot_stats[name]["total_fire_time"] += robot_data["total_fire_time"]
             final_robot_stats[name]["total_AvgRateFixedWindow"] += robot_data["AvgRateFixedWindow"]
             final_robot_stats[name]["total_VolleyAvgRate"] += robot_data["VolleyAvgRate"]
+            final_robot_stats[name]["all_volley_shots_errors"].extend(robot_data["volley_shots_errors"])
+            final_robot_stats[name]["all_volley_hits_errors"].extend(robot_data["volley_hits_errors"])
+            final_robot_stats[name]["all_match_shots_errors"].append(calculate_error(robot_data["total_scouted_shots"], robot_data["total_shots"]))
+            final_robot_stats[name]["all_match_hits_errors"].append(calculate_error(robot_data["total_scouted_shots"], robot_data["total_hits"]))
 
     robot_names_list = list(final_robot_stats.keys()) # get the list of names
     robot_names_list.sort() # sort them (look better)
@@ -266,11 +247,24 @@ def run_simulation(all_robots, schedule):
         scouted_shots = robot_stats["total_shots_scouted"]
 
         # Magazine errors (always computed since they use raw scouting data)
+        # Aggregate (original) - error on the grand totals
         magazine_error = calculate_error(scouted_shots, actual_hits)
         errors["magazine_error"] = errors.get("magazine_error", 0) + magazine_error
 
         magazine_shots_error = calculate_error(scouted_shots, actual_shots)
         errors["magazine_shots_error"] = errors.get("magazine_shots_error", 0) + magazine_shots_error
+
+        # Per-volley average error
+        if PER_VOLLEY_MAGAZINE_ERROR:
+            volley_shots_errs = robot_stats["all_volley_shots_errors"]
+            if volley_shots_errs:
+                errors["per_volley_magazine_shots_error"] = errors.get("per_volley_magazine_shots_error", 0) + sum(volley_shots_errs) / len(volley_shots_errs)
+
+        # Per-match average error
+        if PER_MATCH_MAGAZINE_ERROR:
+            match_shots_errs = robot_stats["all_match_shots_errors"]
+            if match_shots_errs:
+                errors["per_match_magazine_shots_error"] = errors.get("per_match_magazine_shots_error", 0) + sum(match_shots_errs) / len(match_shots_errs)
 
         if fire_rate_metric:
             robot_avg_fire_rate = fire_rate_metric.get_averages()[robot_name][1]
@@ -335,8 +329,14 @@ def run_simulation(all_robots, schedule):
 
     print("-" * 40)
 
-    print(f"Magazine Size Hits Error: {avg_errors.get('magazine_error', 0):.2f}%")
     print(f"Magazine Size Shots Error: {avg_errors.get('magazine_shots_error', 0):.2f}%")
+
+    if "per_volley_magazine_shots_error" in avg_errors:
+        print("---")
+        print(f"Per-Volley Magazine Shots Error: {avg_errors['per_volley_magazine_shots_error']:.2f}%")
+    if "per_match_magazine_shots_error" in avg_errors:
+        print("---")
+        print(f"Per-Match Magazine Shots Error: {avg_errors['per_match_magazine_shots_error']:.2f}%")
 
     if "volley_error" in avg_errors:
         print(f"First Volley Hits Error: {avg_errors['volley_error']:.2f}%")
@@ -385,6 +385,8 @@ def print_suite_results(stats, suite_label):
         "first_volley_bps_weighted_accuracy_error": "Total avg first volley BPS weighted accuracy error",
         "first_volley_bps_weighted_accuracy_tournament_error": "Total avg first volley BPS weighted accuracy (tournament) error",
         "fire_time_weight_error": "Total avg fire time weight error",
+        "per_volley_magazine_shots_error": "Total avg per-volley magazine shots error",
+        "per_match_magazine_shots_error": "Total avg per-match magazine shots error",
     }
 
     for key, label in label_map.items():

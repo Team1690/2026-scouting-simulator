@@ -12,6 +12,8 @@ def scout_robot_match(robot: RobotModel, metric: ScouterModel, accuracy_variance
     total_scouted_shots = 0
     total_time_to_empty = 0
     stats_per_volley = []
+    volley_shots_errors = []
+    volley_hits_errors = []
 
     initial_match_accuracy = robot.accuracy
     number_of_volleys = random.randint(MIN_NUMBER_OF_VOLLEYS, MAX_NUMBER_OF_VOLLEYS) # random number of vollies to simulate
@@ -61,6 +63,9 @@ def scout_robot_match(robot: RobotModel, metric: ScouterModel, accuracy_variance
         scouter_shots = abs(obs_bucket / 100 * robot.magazine_size)
         total_scouted_shots += scouter_shots # add the shots to the total scouted shots
         shots_vs_hits_error = calculate_error(scouter_shots, points)
+
+        volley_shots_errors.append(calculate_error(scouter_shots, current_fuel))
+        volley_hits_errors.append(calculate_error(scouter_shots, points))
         # print(f"Hits error (scouted shots vs actual hits): {shots_vs_hits_error:.2f}% (real hits: {points}, scouted shots: {scouter_shots})")
 
         if current_fuel > 0:
@@ -101,6 +106,8 @@ def scout_robot_match(robot: RobotModel, metric: ScouterModel, accuracy_variance
         "volleys": number_of_volleys,
         "total_fire_time": total_time_to_empty,
         "stats_per_volley": stats_per_volley,
+        "volley_shots_errors": volley_shots_errors,
+        "volley_hits_errors": volley_hits_errors,
     }
 
     return robot_stats
