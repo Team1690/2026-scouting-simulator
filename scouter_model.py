@@ -28,34 +28,22 @@ class ScouterModel:
     def observe_magazine_level(self, actual_percentage):
         percentage_val = actual_percentage * 100
 
+        error_range = self.magazine_error * 100
+        standard_deviation = error_range / 3
+
+        noise = random.gauss(0, standard_deviation)
+        noise = max(-error_range, min(error_range, noise))
+
+        noisy_percentage = percentage_val + noise
+
+        # Find closest bucket
         closest_bucket = self.buckets[0]
-        min_diff = abs(percentage_val - self.buckets[0])
+        min_diff = abs(noisy_percentage - self.buckets[0])
 
         for bucket in self.buckets:
-            diff = abs(percentage_val - bucket)
+            diff = abs(noisy_percentage - bucket)
             if diff < min_diff:
                 min_diff = diff
                 closest_bucket = bucket
-
-        random_chance = random.random()
-
-        if random_chance < self.magazine_error:
-            current_index = 0
-            for i in range(len(self.buckets)):
-                if self.buckets[i] == closest_bucket:
-                    current_index = i
-                    break
-
-            neighbors = []
-
-            if current_index > 0: # if its not the first index
-                neighbors.append(self.buckets[current_index - 1])
-
-            if current_index < len(self.buckets) - 1: # if its not the last index
-                neighbors.append(self.buckets[current_index + 1])
-
-            if len(neighbors) > 0: # if there are neighbors
-                mistake_bucket = random.choice(neighbors)
-                return mistake_bucket
 
         return closest_bucket
