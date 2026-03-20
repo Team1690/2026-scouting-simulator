@@ -1,8 +1,8 @@
 
-NUMBER_OF_RUNS = 500
+NUMBER_OF_RUNS = 150
 
 MATCHES_PER_ROBOT = 10
-ITERATIONS = 50000 # Iterations of match making
+ITERATIONS = 10000 # Iterations of match making
 NUMBER_OF_SCHEDULES = 2 # Pre-generate this many schedules and reuse them across runs
 
 MIN_ACCURACY = 0.50
@@ -26,8 +26,8 @@ MAX_TIME_TO_DEPLETE = 1000.0
 
 NOTIFICATION_STEP = 25
 
-PER_VOLLEY_MAGAZINE_ERROR = True # average per-volley magazine errors instead of error on totals
-PER_MATCH_MAGAZINE_ERROR = True # average per-match magazine errors instead of summing across all matches first
+PER_VOLLEY_ERROR = True # average per-volley errors instead of error on totals
+PER_MATCH_ERROR = True # average per-match errors instead of summing across all matches first
 
 # Which metrics to run. Comment out any metric you don't need to speed up the simulation.
 ENABLED_METRICS = {
